@@ -83,7 +83,7 @@ export default function WelcomeScreen() {
 		if (currentSlide < welcomeSlides.length - 1) {
 			animateSlideTransition("next");
 		} else {
-			router.push("/sign-up");
+			router.push("/onboarding");
 		}
 	};
 
@@ -223,7 +223,7 @@ export default function WelcomeScreen() {
 							<Button
 								className="-ml-3"
 								variant="link"
-								onPress={() => router.push("/login")}
+								onPress={() => router.push("/sign-in")}
 							>
 								<Text>Login</Text>
 							</Button>

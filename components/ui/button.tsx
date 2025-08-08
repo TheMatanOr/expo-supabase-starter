@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
-import { Pressable } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import { cn } from "@/lib/utils";
 import { TextClassContext } from "@/components/ui/text";
 
@@ -60,32 +60,52 @@ const buttonTextVariants = cva(
 );
 
 type ButtonProps = React.ComponentPropsWithoutRef<typeof Pressable> &
-	VariantProps<typeof buttonVariants>;
+	VariantProps<typeof buttonVariants> & {
+		iconStart?: React.ReactNode;
+		iconEnd?: React.ReactNode;
+	};
 
 const Button = React.forwardRef<
 	React.ComponentRef<typeof Pressable>,
 	ButtonProps
->(({ className, variant, size, ...props }, ref) => {
-	return (
-		<TextClassContext.Provider
-			value={buttonTextVariants({
-				variant,
-				size,
-				className: "web:pointer-events-none",
-			})}
-		>
-			<Pressable
-				className={cn(
-					props.disabled && "opacity-50 web:pointer-events-none",
-					buttonVariants({ variant, size, className }),
-				)}
-				ref={ref}
-				role="button"
-				{...props}
-			/>
-		</TextClassContext.Provider>
-	);
-});
+>(
+	(
+		{ className, variant, size, iconStart, iconEnd, children, ...props },
+		ref,
+	) => {
+		return (
+			<TextClassContext.Provider
+				value={buttonTextVariants({
+					variant,
+					size,
+					className: "web:pointer-events-none",
+				})}
+			>
+				<Pressable
+					className={cn(
+						props.disabled && "opacity-50 web:pointer-events-none",
+						buttonVariants({ variant, size, className }),
+					)}
+					ref={ref}
+					role="button"
+					{...props}
+				>
+					<View className="flex-row items-center justify-center gap-2">
+						{iconStart && iconStart}
+						{typeof children === "string" ? (
+							<Text className={buttonTextVariants({ variant, size })}>
+								{children}
+							</Text>
+						) : (
+							<>{children}</>
+						)}
+						{iconEnd && iconEnd}
+					</View>
+				</Pressable>
+			</TextClassContext.Provider>
+		);
+	},
+);
 Button.displayName = "Button";
 
 export { Button, buttonTextVariants, buttonVariants };

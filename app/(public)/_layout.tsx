@@ -8,11 +8,13 @@ export default function PublicLayout() {
 
 	return (
 		<Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
-			<Stack.Screen name="welcome" />
+			<Stack.Screen name="onboarding" />
+
 			<Stack.Screen
 				name="sign-up"
 				options={{
 					presentation: "modal",
+					headerBackVisible: true,
 					headerShown: true,
 					headerTitle: "Sign Up",
 					headerStyle: {
@@ -26,8 +28,11 @@ export default function PublicLayout() {
 							? colors.dark.foreground
 							: colors.light.foreground,
 					gestureEnabled: true,
+					sheetAllowedDetents: [0.5],
+					sheetGrabberVisible: true,
 				}}
 			/>
+
 			<Stack.Screen
 				name="sign-in"
 				options={{
