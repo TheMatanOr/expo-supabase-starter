@@ -1,0 +1,80 @@
+Here’s a tight, ready-to-paste prompt for Cursor:
+
+⸻
+
+Project: React Native + Expo + NativeWind v4 + Supabase — MVP Boilerplate
+
+Goal: Build a production-ready boilerplate that ships with a splash screen, welcome flow, full authentication, and a basic protected app area (e.g., Home + Settings). The UI must match the provided Figma exactly. Implement a design system so the entire look can be re-themed by changing variables in the Tailwind config.
+
+Core Requirements
+	•	Stack: React Native (Expo), TypeScript, NativeWind v4, Supabase (Auth + DB), React Navigation.
+	•	Figma: Replicate spacing, typography, colors, radii, layout, and component states 1:1. Name components and variants to match Figma layers.
+	•	Design System: Centralize tokens (colors, spacing, font sizes, radii, shadows) in tailwind.config.js so the app can be restyled by editing variables only. Support light/dark themes via class strategy.
+	•	NativeWind v4: Style everything with NativeWind classes (no inline styles unless unavoidable). Use variants/slots for component states (pressed/disabled/focus).
+	•	Type Safety & DX: Strict TypeScript, ESLint/Prettier, absolute imports, minimal and clean folder structure.
+
+App Flow & Screens
+	1.	Splash Screen
+	•	Native splash (Expo) + in-app skeleton while bootstrapping theme, auth session, and fonts.
+	2.	Welcome / Intro
+	•	Multi-slide explainer matching Figma: progress indicator, “Skip” in header, “Continue” button that becomes “Get Started” on last slide.
+	•	Persist completion so returning users skip this step.
+	3.	Auth
+	•	Email/password and OAuth providers (as per Figma).
+	•	Screens: Sign In, Sign Up, Forgot Password, Magic Link confirmation state if in Figma.
+	•	Error states, validation, disabled/loading states per Figma.
+	•	Store session securely and auto-restore on app start.
+	4.	Protected Area
+	•	Home (placeholder): minimal authenticated landing per Figma.
+	•	Settings: profile (name, avatar, email), change password (if email/pw), theme toggle (light/dark/system), logout, legal links. Respect Figma spacing/typography.
+	•	Route guards: unauthenticated users can’t access protected routes.
+	5.	Navigation
+	•	Auth stack ↔ App stack with a root switch that reacts to session state.
+	•	Header styles and gestures exactly as in Figma.
+
+State & Data
+	•	Supabase Auth: typed client, listener for auth state changes, token refresh, error handling toasts.
+	•	Profile Table (if in Figma): create/read/update basic profile fields.
+	•	Secure Storage: persist session safely (Expo SecureStore or equivalent).
+
+Theming & Tokens (must be centralized)
+	•	Tailwind tokens for:
+	•	colors: primary, primary-foreground, bg, fg, muted, accent, destructive, border, ring
+	•	fontSize: xs…4xl mapped to Figma’s type scale
+	•	spacing: aligned to Figma 4/8pt scale
+	•	radius: sm|md|lg|xl|2xl|full
+	•	shadow: map to Figma elevations
+	•	Implement dark mode tokens and ensure all components respond to theme change without restyle.
+
+Components (match Figma exactly)
+	•	Buttons (primary/secondary/ghost), Inputs (with label, hint, error), TextArea, Checkbox/Switch, Tabs/Segmented control, Card, Sheet/Modal, Toast/Inline error, List items, Avatars, Header with optional actions.
+	•	All have loading, disabled, focus, and pressed states consistent with Figma.
+
+UX Details
+	•	Realistic skeletons/placeholders during network waits.
+	•	Accessible touch targets, semantic roles where applicable, proper contrast.
+	•	Keyboard management on forms, safe areas, empty states, and error boundaries.
+
+Folder Structure (clean & scalable)
+
+Acceptance Criteria
+	•	Pixel-perfect to Figma (spacing, radii, fonts, colors, component states).
+	•	All screens implemented and navigable as described.
+	•	Toggling theme updates the entire UI live; tokens only in Tailwind config.
+	•	Auth is fully working (sign up/in/out, session restore).
+	•	Protected routes are enforced.
+	•	0 TypeScript errors; lint passes.
+	•	Clear README explaining: design tokens, where to change theming, how navigation/auth state is wired, and where each Figma component maps in code.
+
+Deliverables
+	•	Complete repo with the structure above.
+	•	Tailwind config with all tokens and themes.
+	•	Reusable UI components matching Figma.
+	•	Minimal unit tests for critical UI logic (button states, form validation).
+	•	Short README covering design system, auth flow, and routing.
+
+Notes
+	•	Do not include boilerplate “how to init Expo” instructions. Focus on implementing the product to spec.
+	•	If any Figma ambiguity exists, document assumptions in the README and keep styling token-driven.
+
+⸻

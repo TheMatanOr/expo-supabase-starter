@@ -6,6 +6,9 @@ module.exports = {
 	presets: [require("nativewind/preset")],
 	theme: {
 		extend: {
+			backgroundImage: (theme) => ({
+				"gradient-primary": `linear-gradient(to right, ${theme("colors.primary")}, ${theme("colors.primary")}80)`,
+			}),
 			colors: {
 				border: "hsl(var(--border))",
 				input: "hsl(var(--input))",

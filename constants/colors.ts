@@ -32,7 +32,7 @@ export const colors = {
 		cardForeground: "hsl(0, 0%, 98%)",
 		popover: "hsl(240, 10%, 3.90%)",
 		popoverForeground: "hsl(0, 0%, 98%)",
-		primary: "hsl(0, 0%, 98%)",
+		primary: "hsl(312 94.7% 33.8%)",
 		primaryForeground: "hsl(240, 5.90%, 10%)",
 		secondary: "hsl(240, 3.70%, 15.90%)",
 		secondaryForeground: "hsl(0, 0%, 98%)",
