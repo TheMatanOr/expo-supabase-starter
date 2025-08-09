@@ -75,4 +75,5 @@ export const authConstants = {
 		welcome: "55%",
 		other: "90%",
 	},
+	stepOrder: ["welcome", "email", "verification"] as const,
 };

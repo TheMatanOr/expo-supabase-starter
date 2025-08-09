@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useCallback } from "react";
 import { View, Animated, TouchableOpacity } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {
@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/bottom-sheet";
 import { colors } from "@/constants/colors";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { authConstants } from "./data";
 import type {
 	AuthStep,
 	AuthData,
@@ -36,14 +37,10 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 	const bottomSheetRef = useRef<CustomBottomSheetRef>(null);
 	const fadeAnim = useRef(new Animated.Value(1)).current;
 
-	const handleClose = useCallback(() => {
-		bottomSheetRef.current?.close();
-	}, []);
+	// Extract step order constant
+	const stepOrder = authConstants.stepOrder;
 
 	const handleBack = useCallback(() => {
-		// Simplified flow: welcome → email → verification (then direct to homepage)
-		const stepOrder: AuthStep[] = ["welcome", "email", "verification"];
-
 		const currentIndex = stepOrder.indexOf(currentStep);
 
 		if (currentIndex > 0) {
@@ -51,23 +48,20 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 
 			Animated.timing(fadeAnim, {
 				toValue: 0,
-				duration: 200,
+				duration: authConstants.animationDuration,
 				useNativeDriver: true,
 			}).start(() => {
 				onStepChange(previousStep);
 				Animated.timing(fadeAnim, {
 					toValue: 1,
-					duration: 200,
+					duration: authConstants.animationDuration,
 					useNativeDriver: true,
 				}).start();
 			});
 		}
-	}, [currentStep, fadeAnim, onStepChange]);
+	}, [currentStep, fadeAnim, onStepChange, stepOrder]);
 
 	const handleNext = useCallback(() => {
-		// Simplified flow: welcome → email → verification (then direct to homepage)
-		const stepOrder: AuthStep[] = ["welcome", "email", "verification"];
-
 		const currentIndex = stepOrder.indexOf(currentStep);
 
 		if (currentIndex < stepOrder.length - 1) {
@@ -75,30 +69,29 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 
 			Animated.timing(fadeAnim, {
 				toValue: 0,
-				duration: 200,
+				duration: authConstants.animationDuration,
 				useNativeDriver: true,
 			}).start(() => {
 				onStepChange(nextStep);
 				Animated.timing(fadeAnim, {
 					toValue: 1,
-					duration: 200,
+					duration: authConstants.animationDuration,
 					useNativeDriver: true,
 				}).start();
 			});
 		}
-	}, [currentStep, fadeAnim, onStepChange]);
+	}, [currentStep, fadeAnim, onStepChange, stepOrder]);
 
 	const currentStepConfig = steps[currentStep];
 	const CurrentStepComponent = currentStepConfig.component;
-	const showBackButton =
-		currentStepConfig.showBackButton && currentStep !== "welcome";
+	const showBackButton = currentStep !== "welcome";
 	const snapPoint =
-		currentStepConfig.snapPoint || (currentStep === "welcome" ? "55%" : "90%");
+		currentStepConfig.snapPoint ||
+		(currentStep === "welcome"
+			? authConstants.snapPoints.welcome
+			: authConstants.snapPoints.other);
 
 	const renderHeaderButtons = () => {
-		// Show back button on all steps except welcome
-		const showBackButton = currentStep !== "welcome";
-
 		return (
 			<>
 				{showBackButton ? (
@@ -111,7 +104,7 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 					</TouchableOpacity>
 				) : currentStep === "welcome" ? (
 					<TouchableOpacity
-						onPress={handleClose}
+						onPress={onClose}
 						className="absolute top-6 right-8 p-2 z-20"
 					>
 						<AntDesign
