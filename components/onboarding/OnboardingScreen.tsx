@@ -199,7 +199,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			<View className="p-4">
 				<Button
 					variant="default"
-					className="w-full"
+					className="w-full "
 					size="lg"
 					onPress={handleContinue}
 					disabled={!canContinue()}
