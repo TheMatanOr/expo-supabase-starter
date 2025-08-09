@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, {
+	useCallback,
+	useMemo,
+	useRef,
+	forwardRef,
+	useImperativeHandle,
+} from "react";
 import { View, Text } from "react-native";
 import { BlurView } from "expo-blur";
 import BottomSheet, {
@@ -15,14 +21,21 @@ interface BottomSheetProps {
 	index?: number;
 }
 
-export function CustomBottomSheet({
-	isVisible,
-	onClose,
-	children,
-	snapPoints,
-	index = 0,
-}: BottomSheetProps) {
+export interface CustomBottomSheetRef {
+	close: (animationConfigs?: any) => void;
+}
+
+export const CustomBottomSheet = forwardRef<
+	CustomBottomSheetRef,
+	BottomSheetProps
+>(({ isVisible, onClose, children, snapPoints, index = 0 }, ref) => {
 	const bottomSheetRef = useRef<BottomSheet>(null);
+
+	useImperativeHandle(ref, () => ({
+		close: (animationConfigs?: any) => {
+			bottomSheetRef.current?.close(animationConfigs);
+		},
+	}));
 
 	const handleSheetChanges = useCallback(
 		(index: number) => {
@@ -40,7 +53,7 @@ export function CustomBottomSheet({
 				disappearsOnIndex={-1}
 				appearsOnIndex={0}
 				opacity={0.85}
-				pressBehavior="close"
+				pressBehavior="none"
 				enableTouchThrough={false}
 			></BottomSheetBackdrop>
 		),
@@ -53,11 +66,14 @@ export function CustomBottomSheet({
 		<BottomSheet
 			ref={bottomSheetRef}
 			index={index}
-			snapPoints={snapPoints}
+			snapPoints={snapPoints || ["55%"]}
 			onChange={handleSheetChanges}
 			backdropComponent={renderBackdrop}
-			enablePanDownToClose={true}
+			enablePanDownToClose={false}
+			enableOverDrag={false}
+			enableDynamicSizing={false}
 			animateOnMount={true}
+			handleComponent={null}
 			backgroundStyle={{
 				backgroundColor: colors.dark.background,
 				borderTopLeftRadius: 50,
@@ -73,13 +89,10 @@ export function CustomBottomSheet({
 				shadowRadius: 40.0,
 				elevation: 60,
 			}}
-			handleIndicatorStyle={{
-				backgroundColor: colors.dark.muted,
-				width: 40,
-				height: 4,
-			}}
 		>
 			<BottomSheetView className="flex-1">{children}</BottomSheetView>
 		</BottomSheet>
 	);
-}
+});
+
+CustomBottomSheet.displayName = "CustomBottomSheet";
