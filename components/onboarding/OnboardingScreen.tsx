@@ -9,6 +9,7 @@ import { H1, Muted } from "@/components/ui/typography";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { OptionCard } from "@/components/ui/option-card";
 import { BackButton } from "@/components/ui/back-button";
+import { Input } from "@/components/ui/input";
 import { SignUpFlow } from "@/components/auth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { onboardingSteps, onboardingTexts, onboardingAnimations } from "./data";
@@ -34,6 +35,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 		getOnboardingData,
 		getRawFormData,
 		formState,
+		watchedValues,
 	} = useOnboarding();
 
 	const [showSignUpSheet, setShowSignUpSheet] = useState(false);
@@ -87,6 +89,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 	const handleOptionSelectWrapper = (optionId: string): void => {
 		const isMultiSelect = currentStep.type === "multi-select";
 		const stepKey = currentStep.id as
+			| "full_name"
 			| "fitness_level"
 			| "goals"
 			| "workout_frequency";
@@ -94,6 +97,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			`Selecting option: ${optionId} for step: ${currentStep.id} (multiSelect: ${isMultiSelect})`,
 		);
 		handleOptionSelect(stepKey, optionId, isMultiSelect);
+	};
+
+	const handleInputChange = (text: string): void => {
+		const stepKey = currentStep.id as "full_name";
+		console.log(`Input change for ${stepKey}: ${text}`);
+		handleOptionSelect(stepKey, text, false); // Treat input as single selection
 	};
 
 	const handleContinue = async (): Promise<void> => {
@@ -130,6 +139,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
 	const canContinue = (): boolean => {
 		const stepKey = currentStep.id as
+			| "full_name"
 			| "fitness_level"
 			| "goals"
 			| "workout_frequency";
@@ -137,8 +147,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 	};
 
 	const currentStepError =
-		errors[currentStep.id as "fitness_level" | "goals" | "workout_frequency"]
-			?.message;
+		errors[
+			currentStep.id as
+				| "full_name"
+				| "fitness_level"
+				| "goals"
+				| "workout_frequency"
+		]?.message;
 
 	return (
 		<SafeAreaView className="flex flex-1 bg-background">
@@ -183,31 +198,50 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 				>
 					{/* Step Title and Description */}
 					<View className="mb-8">
-						<H1 className="text-center mb-3">{currentStep.title}</H1>
-						<Muted className="text-center text-base">
-							{currentStep.description}
-						</Muted>
+						<H1 className="text-center ">{currentStep.title}</H1>
+						{currentStep.description !== "" && (
+							<Muted className="text-center text-base mt-3">
+								{currentStep.description}
+							</Muted>
+						)}
 					</View>
 
-					{/* Options */}
-					<View className="gap-y-4">
-						{currentStep.options?.map((option: OnboardingOption) => (
-							<OptionCard
-								key={option.id}
-								id={option.id}
-								label={option.label}
-								description={option.description}
-								isSelected={isOptionSelected(
-									currentStep.id as
-										| "fitness_level"
-										| "goals"
-										| "workout_frequency",
-									option.id,
-								)}
-								onPress={handleOptionSelectWrapper}
+					{/* Input or Options */}
+					{currentStep.type === "input" ? (
+						<View className="gap-y-4">
+							<Input
+								placeholder={currentStep.placeholder || "Enter your answer"}
+								value={
+									watchedValues[
+										currentStep.id as keyof typeof watchedValues
+									]?.[0] || ""
+								}
+								onChangeText={handleInputChange}
+								autoCapitalize="words"
+								autoComplete="name"
 							/>
-						))}
-					</View>
+						</View>
+					) : (
+						<View className="gap-y-4">
+							{currentStep.options?.map((option: OnboardingOption) => (
+								<OptionCard
+									key={option.id}
+									id={option.id}
+									label={option.label}
+									description={option.description}
+									isSelected={isOptionSelected(
+										currentStep.id as
+											| "full_name"
+											| "fitness_level"
+											| "goals"
+											| "workout_frequency",
+										option.id,
+									)}
+									onPress={handleOptionSelectWrapper}
+								/>
+							))}
+						</View>
+					)}
 
 					{/* Step Error */}
 					{currentStepError && (

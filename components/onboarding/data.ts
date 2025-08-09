@@ -16,6 +16,14 @@ export const onboardingTexts = {
 // Onboarding steps data
 export const onboardingSteps: OnboardingStep[] = [
 	{
+		id: "full_name",
+		title: "How should we call you?",
+		description: "",
+		type: "input",
+		required: true,
+		placeholder: "Enter your full name",
+	},
+	{
 		id: "fitness_level",
 		title: "What's your fitness level?",
 		description: "Help us personalize your workout experience",

@@ -7,6 +7,7 @@ import {
 
 // Form data type for React Hook Form
 export interface OnboardingFormData {
+	full_name: string[];
 	fitness_level: string[];
 	goals: string[];
 	workout_frequency: string[];
@@ -14,6 +15,7 @@ export interface OnboardingFormData {
 
 // Default form values
 const defaultValues: OnboardingFormData = {
+	full_name: [],
 	fitness_level: [],
 	goals: [],
 	workout_frequency: [],
@@ -89,6 +91,7 @@ export const useOnboarding = () => {
 
 			// Check if form has any data before validating
 			const hasAnyData =
+				formData.full_name.length > 0 ||
 				formData.fitness_level.length > 0 ||
 				formData.goals.length > 0 ||
 				formData.workout_frequency.length > 0;
@@ -110,6 +113,7 @@ export const useOnboarding = () => {
 
 		// Check that all required fields have selections
 		const hasAllSelections =
+			formData.full_name.length > 0 &&
 			formData.fitness_level.length > 0 &&
 			formData.goals.length > 0 &&
 			formData.workout_frequency.length > 0;
@@ -162,6 +166,7 @@ export const useOnboarding = () => {
 
 		// Count completed steps
 		let completedSteps = 0;
+		if (formData.full_name.length > 0) completedSteps++;
 		if (formData.fitness_level.length > 0) completedSteps++;
 		if (formData.goals.length > 0) completedSteps++;
 		if (formData.workout_frequency.length > 0) completedSteps++;

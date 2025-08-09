@@ -8,6 +8,14 @@ export const onboardingOptionSchema = z.object({
 });
 
 // Individual step schemas based on your actual onboarding steps
+export const fullNameSchema = z
+	.array(z.string())
+	.length(1, "Please enter your full name")
+	.refine(
+		(arr) => arr[0] && arr[0].trim().length > 0,
+		"Full name cannot be empty",
+	);
+
 export const fitnessLevelSchema = z
 	.array(z.string())
 	.length(1, "Please select your fitness level");
@@ -22,6 +30,7 @@ export const workoutFrequencySchema = z
 
 // Complete onboarding data schema
 export const onboardingDataSchema = z.object({
+	full_name: fullNameSchema,
 	fitness_level: fitnessLevelSchema,
 	goals: goalsSchema,
 	workout_frequency: workoutFrequencySchema,
@@ -33,6 +42,7 @@ export const validateCompleteOnboarding = (
 ) => {
 	// Check that all required steps have selections
 	const hasAllSelections =
+		selections["full_name"]?.length > 0 &&
 		selections["fitness_level"]?.length > 0 &&
 		selections["goals"]?.length > 0 &&
 		selections["workout_frequency"]?.length > 0;
@@ -83,6 +93,7 @@ export const transformOnboardingSelections = (
 	selections: Record<string, string[]>,
 ): OnboardingData => {
 	return onboardingDataSchema.parse({
+		full_name: selections["full_name"] || [],
 		fitness_level: selections["fitness_level"] || [],
 		goals: selections["goals"] || [],
 		workout_frequency: selections["workout_frequency"] || [],

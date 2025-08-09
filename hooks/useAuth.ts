@@ -298,7 +298,8 @@ export const useAuth = () => {
 					.upsert({
 						id: userId,
 						email: profileData.email,
-						full_name: profileData.fullName,
+						full_name:
+							profileData.fullName || onboardingData?.full_name?.[0] || null,
 						// Extract onboarding data into separate columns
 						fitness_level: onboardingData?.fitness_level?.[0] || null, // Single select
 						goals: onboardingData?.goals || [], // Multi select array
