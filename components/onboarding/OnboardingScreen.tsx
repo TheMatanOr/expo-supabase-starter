@@ -9,7 +9,7 @@ import { H1, Muted } from "@/components/ui/typography";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { OptionCard } from "@/components/ui/option-card";
 import { BackButton } from "@/components/ui/back-button";
-import { SignUpBottomSheet } from "@/components/sign-up-bottom-sheet";
+import { SignUpFlow } from "@/components/auth";
 import { onboardingSteps, onboardingTexts, onboardingAnimations } from "./data";
 import type {
 	OnboardingStep,
@@ -212,10 +212,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 				</Button>
 			</View>
 
-			{/* Sign-Up Bottom Sheet */}
-			<SignUpBottomSheet
+			{/* Sign-Up Flow */}
+			<SignUpFlow
 				isVisible={showSignUpSheet}
 				onClose={() => setShowSignUpSheet(false)}
+				onSuccess={(data) => {
+					console.log("Sign up successful:", data);
+					// TODO: Handle successful signup (e.g., navigate to main app)
+				}}
 			/>
 		</SafeAreaView>
 	);
