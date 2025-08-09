@@ -21,6 +21,8 @@ interface AuthBottomSheetLayoutProps extends AuthBottomSheetProps {
 	onStepChange: (step: AuthStep) => void;
 	authData: AuthData;
 	onAuthDataChange: (data: Partial<AuthData>) => void;
+	onSwitchMode?: (newMode: "signup" | "login") => void;
+	onboardingData?: any;
 }
 
 export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
@@ -32,6 +34,8 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 	authData,
 	onAuthDataChange,
 	mode = "signup",
+	onSwitchMode,
+	onboardingData,
 }) => {
 	const { colorScheme } = useColorScheme();
 	const bottomSheetRef = useRef<CustomBottomSheetRef>(null);
@@ -41,7 +45,7 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 	const stepOrder = authConstants.stepOrder;
 
 	const handleBack = useCallback(() => {
-		const currentIndex = stepOrder.indexOf(currentStep);
+		const currentIndex = stepOrder.indexOf(currentStep as any);
 
 		if (currentIndex > 0) {
 			const previousStep = stepOrder[currentIndex - 1];
@@ -51,6 +55,15 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 				duration: authConstants.animationDuration,
 				useNativeDriver: true,
 			}).start(() => {
+				// Clear current step data and errors when going back
+				if (currentStep === "verification") {
+					// Clear verification code when going back to email
+					onAuthDataChange({ verificationCode: "" });
+				} else if (currentStep === "email") {
+					// Clear email when going back to welcome
+					onAuthDataChange({ email: "" });
+				}
+
 				onStepChange(previousStep);
 				Animated.timing(fadeAnim, {
 					toValue: 1,
@@ -59,13 +72,21 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 				}).start();
 			});
 		}
-	}, [currentStep, fadeAnim, onStepChange, stepOrder]);
+	}, [currentStep, fadeAnim, onStepChange, stepOrder, onAuthDataChange]);
 
 	const handleNext = useCallback(() => {
-		const currentIndex = stepOrder.indexOf(currentStep);
+		console.log(
+			"AuthBottomSheet: handleNext called, currentStep:",
+			currentStep,
+		);
+		console.log("AuthBottomSheet: stepOrder:", stepOrder);
+
+		const currentIndex = stepOrder.indexOf(currentStep as any);
+		console.log("AuthBottomSheet: currentIndex:", currentIndex);
 
 		if (currentIndex < stepOrder.length - 1) {
 			const nextStep = stepOrder[currentIndex + 1];
+			console.log("AuthBottomSheet: Moving to next step:", nextStep);
 
 			Animated.timing(fadeAnim, {
 				toValue: 0,
@@ -79,6 +100,8 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 					useNativeDriver: true,
 				}).start();
 			});
+		} else {
+			console.log("AuthBottomSheet: Already at last step, cannot move next");
 		}
 	}, [currentStep, fadeAnim, onStepChange, stepOrder]);
 
@@ -141,6 +164,8 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 						onBack={showBackButton ? handleBack : undefined}
 						onClose={onClose}
 						mode={mode}
+						onSwitchMode={onSwitchMode}
+						onboardingData={onboardingData}
 					/>
 				</Animated.View>
 			</View>

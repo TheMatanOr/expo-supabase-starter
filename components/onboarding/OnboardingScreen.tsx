@@ -10,11 +10,11 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { OptionCard } from "@/components/ui/option-card";
 import { BackButton } from "@/components/ui/back-button";
 import { SignUpFlow } from "@/components/auth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { onboardingSteps, onboardingTexts, onboardingAnimations } from "./data";
 import type {
 	OnboardingStep,
 	OnboardingOption,
-	OnboardingProgress,
 	OnboardingScreenProps,
 } from "./types";
 
@@ -24,21 +24,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 	initialStep = 0,
 }) => {
 	const router = useRouter();
-	const [currentStepIndex, setCurrentStepIndex] = useState<number>(initialStep);
-	const [selectedOptions, setSelectedOptions] = useState<
-		Record<string, string[]>
-	>({});
+	const {
+		handleOptionSelect,
+		isOptionSelected,
+		canContinueStep,
+		completeOnboarding,
+		getProgress,
+		errors,
+		getOnboardingData,
+		getRawFormData,
+		formState,
+	} = useOnboarding();
+
 	const [showSignUpSheet, setShowSignUpSheet] = useState(false);
+	const [currentStepIndex, setCurrentStepIndex] = useState(initialStep);
 	const fadeAnim = useRef(new Animated.Value(1)).current;
 	const slideAnim = useRef(new Animated.Value(0)).current;
 
 	const currentStep: OnboardingStep = onboardingSteps[currentStepIndex];
-	const progress: OnboardingProgress = {
-		currentStep: currentStepIndex + 1,
-		totalSteps: onboardingSteps.length,
-		completedSteps: Object.keys(selectedOptions).length,
-		answers: selectedOptions,
-	};
 
 	// Animate step transition
 	const animateStepTransition = (direction: "next" | "prev"): void => {
@@ -58,13 +61,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 				useNativeDriver: true,
 			}),
 		]).start(() => {
-			// Update step
-			const newStepIndex =
-				direction === "next"
-					? Math.min(currentStepIndex + 1, onboardingSteps.length - 1)
-					: Math.max(currentStepIndex - 1, 0);
-
-			setCurrentStepIndex(newStepIndex);
+			// Update step index
+			if (direction === "next") {
+				setCurrentStepIndex((prev) => prev + 1);
+			} else {
+				setCurrentStepIndex((prev) => prev - 1);
+			}
 
 			// Fade in new content
 			Animated.parallel([
@@ -82,40 +84,33 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 		});
 	};
 
-	const handleOptionSelect = (optionId: string): void => {
-		if (currentStep.type === "single-select") {
-			const currentSelections = selectedOptions[currentStep.id] || [];
-			const isCurrentlySelected = currentSelections.includes(optionId);
-
-			// If already selected, deselect it; otherwise, select it
-			const newSelections = isCurrentlySelected ? [] : [optionId];
-
-			setSelectedOptions({
-				...selectedOptions,
-				[currentStep.id]: newSelections,
-			});
-		} else if (currentStep.type === "multi-select") {
-			const currentSelections = selectedOptions[currentStep.id] || [];
-			const newSelections = currentSelections.includes(optionId)
-				? currentSelections.filter((id) => id !== optionId)
-				: [...currentSelections, optionId];
-
-			setSelectedOptions({
-				...selectedOptions,
-				[currentStep.id]: newSelections,
-			});
-		}
+	const handleOptionSelectWrapper = (optionId: string): void => {
+		const isMultiSelect = currentStep.type === "multi-select";
+		const stepKey = currentStep.id as
+			| "fitness_level"
+			| "goals"
+			| "workout_frequency";
+		console.log(
+			`Selecting option: ${optionId} for step: ${currentStep.id} (multiSelect: ${isMultiSelect})`,
+		);
+		handleOptionSelect(stepKey, optionId, isMultiSelect);
 	};
 
-	const handleContinue = (): void => {
+	const handleContinue = async (): Promise<void> => {
 		if (currentStepIndex < onboardingSteps.length - 1) {
 			animateStepTransition("next");
 		} else {
-			// Complete onboarding and show sign-up bottom sheet
-			console.log("Onboarding completed:", selectedOptions);
-			setShowSignUpSheet(true);
-			if (onComplete) {
-				onComplete(selectedOptions);
+			// Complete onboarding
+			const result = await completeOnboarding();
+
+			if (result.success) {
+				console.log("Onboarding completed successfully:", result.data);
+				setShowSignUpSheet(true);
+				if (onComplete) {
+					onComplete(result.data as any);
+				}
+			} else {
+				console.error("Failed to complete onboarding:", result.error);
 			}
 		}
 	};
@@ -133,23 +128,38 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 		}
 	};
 
-	const isOptionSelected = (optionId: string): boolean => {
-		const currentSelections = selectedOptions[currentStep.id] || [];
-		return currentSelections.includes(optionId);
+	const canContinue = (): boolean => {
+		const stepKey = currentStep.id as
+			| "fitness_level"
+			| "goals"
+			| "workout_frequency";
+		return canContinueStep(stepKey, currentStep.required);
 	};
 
-	const canContinue = (): boolean => {
-		const currentSelections = selectedOptions[currentStep.id] || [];
-		return currentStep.required ? currentSelections.length > 0 : true;
-	};
+	const currentStepError =
+		errors[currentStep.id as "fitness_level" | "goals" | "workout_frequency"]
+			?.message;
 
 	return (
 		<SafeAreaView className="flex flex-1 bg-background">
 			{/* Progress Bar */}
 			<ProgressBar
-				currentStep={progress.currentStep}
-				totalSteps={progress.totalSteps}
+				currentStep={
+					getProgress(currentStepIndex, onboardingSteps.length).currentStep
+				}
+				totalSteps={
+					getProgress(currentStepIndex, onboardingSteps.length).totalSteps
+				}
 			/>
+
+			{/* Global Error */}
+			{currentStepError && (
+				<View className="px-4 pt-2">
+					<Text className="text-red-500 text-sm text-center">
+						{currentStepError}
+					</Text>
+				</View>
+			)}
 
 			{/* Back Button - Always show now */}
 			<View className="px-4 pt-2">
@@ -187,11 +197,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 								id={option.id}
 								label={option.label}
 								description={option.description}
-								isSelected={isOptionSelected(option.id)}
-								onPress={handleOptionSelect}
+								isSelected={isOptionSelected(
+									currentStep.id as
+										| "fitness_level"
+										| "goals"
+										| "workout_frequency",
+									option.id,
+								)}
+								onPress={handleOptionSelectWrapper}
 							/>
 						))}
 					</View>
+
+					{/* Step Error */}
+					{currentStepError && (
+						<Text className="text-red-500 text-sm text-center mt-4">
+							{currentStepError}
+						</Text>
+					)}
 				</Animated.View>
 			</ScrollView>
 
@@ -199,15 +222,17 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			<View className="p-4">
 				<Button
 					variant="default"
-					className="w-full "
+					className="w-full"
 					size="lg"
 					onPress={handleContinue}
-					disabled={!canContinue()}
+					disabled={!canContinue() || formState.isSubmitting}
 				>
 					<Text>
-						{currentStepIndex === onboardingSteps.length - 1
-							? onboardingTexts.buttons.completeSetup
-							: onboardingTexts.buttons.continue}
+						{formState.isSubmitting
+							? "Saving..."
+							: currentStepIndex === onboardingSteps.length - 1
+								? onboardingTexts.buttons.completeSetup
+								: onboardingTexts.buttons.continue}
 					</Text>
 				</Button>
 			</View>
@@ -215,11 +240,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			{/* Sign-Up Flow */}
 			<SignUpFlow
 				isVisible={showSignUpSheet}
-				onClose={() => setShowSignUpSheet(false)}
+				initialStep="email" // Start directly with email since onboarding is complete
+				onClose={() => {
+					console.log("OnboardingScreen: SignUp sheet closing");
+					setShowSignUpSheet(false);
+				}}
 				onSuccess={(data) => {
-					console.log("Sign up successful:", data);
+					console.log("OnboardingScreen: Sign up successful:", data);
 					// TODO: Handle successful signup (e.g., navigate to main app)
 				}}
+				onboardingData={getRawFormData()}
 			/>
 		</SafeAreaView>
 	);

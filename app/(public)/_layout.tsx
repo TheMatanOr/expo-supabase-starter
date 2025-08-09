@@ -8,6 +8,8 @@ export default function PublicLayout() {
 
 	return (
 		<Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
+			<Stack.Screen name="welcome" />
+
 			<Stack.Screen name="onboarding" />
 
 			<Stack.Screen

@@ -16,7 +16,7 @@ export const NameStep: React.FC<StepProps> = ({
 
 	const handleContinue = () => {
 		if (data.fullName.trim()) {
-			onNext();
+			onNext?.();
 		}
 	};
 

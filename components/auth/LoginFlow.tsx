@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AuthBottomSheet } from "./AuthBottomSheet";
 import { WelcomeStep, EmailStep, VerificationStep } from "./steps";
 import type {
@@ -53,6 +53,19 @@ export const LoginFlow: React.FC<LoginFlowProps> = ({
 		verificationCode: "",
 		fullName: "", // Not used in login flow
 	});
+
+	// Reset to welcome step when modal closes
+	useEffect(() => {
+		if (!isVisible) {
+			setCurrentStep("welcome");
+			// Also clear auth data when modal closes
+			setAuthData({
+				email: "",
+				verificationCode: "",
+				fullName: "",
+			});
+		}
+	}, [isVisible]);
 
 	const handleAuthDataChange = (data: Partial<AuthData>) => {
 		setAuthData((prev) => ({ ...prev, ...data }));

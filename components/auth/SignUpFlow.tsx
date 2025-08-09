@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AuthBottomSheet } from "./AuthBottomSheet";
 import { WelcomeStep, EmailStep, VerificationStep } from "./steps";
 import type {
@@ -38,6 +38,8 @@ const AUTH_STEPS: Record<AuthStep, StepConfig> = {
 
 interface SignUpFlowProps extends Omit<AuthBottomSheetProps, "mode"> {
 	onSuccess?: (data: AuthData) => void;
+	onboardingData?: any;
+	onSwitchToLogin?: () => void;
 }
 
 export const SignUpFlow: React.FC<SignUpFlowProps> = ({
@@ -45,6 +47,8 @@ export const SignUpFlow: React.FC<SignUpFlowProps> = ({
 	onClose,
 	initialStep = "welcome",
 	onSuccess,
+	onboardingData,
+	onSwitchToLogin,
 }) => {
 	const [currentStep, setCurrentStep] = useState<AuthStep>(initialStep);
 	const [authData, setAuthData] = useState<AuthData>({
@@ -53,16 +57,37 @@ export const SignUpFlow: React.FC<SignUpFlowProps> = ({
 		fullName: "",
 	});
 
+	// Reset to welcome step when modal closes
+	useEffect(() => {
+		if (!isVisible) {
+			setCurrentStep("welcome");
+			// Also clear auth data when modal closes
+			setAuthData({
+				email: "",
+				verificationCode: "",
+				fullName: "",
+			});
+		}
+	}, [isVisible]);
+
 	const handleAuthDataChange = (data: Partial<AuthData>) => {
 		setAuthData((prev) => ({ ...prev, ...data }));
 	};
 
 	const handleStepChange = (step: AuthStep) => {
+		console.log("SignUpFlow: Step change requested:", currentStep, "->", step);
 		setCurrentStep(step);
 
 		// Handle success step
 		if (step === "success" && onSuccess) {
 			onSuccess(authData);
+		}
+	};
+
+	const handleSwitchMode = (newMode: "signup" | "login") => {
+		if (newMode === "login" && onSwitchToLogin) {
+			// Close signup and open login
+			onSwitchToLogin();
 		}
 	};
 
@@ -87,6 +112,8 @@ export const SignUpFlow: React.FC<SignUpFlowProps> = ({
 			authData={authData}
 			onAuthDataChange={handleAuthDataChange}
 			mode="signup"
+			onSwitchMode={handleSwitchMode}
+			onboardingData={onboardingData}
 		/>
 	);
 };

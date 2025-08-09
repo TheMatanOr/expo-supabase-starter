@@ -123,7 +123,7 @@ export function MaterialInput({
 					placeholderTextColor="#9CA3AF"
 					secureTextEntry={secureTextEntry}
 					autoCapitalize={autoCapitalize}
-					autoComplete={autoComplete}
+					autoComplete={autoComplete as any}
 					autoCorrect={autoCorrect}
 					keyboardType={keyboardType}
 					maxLength={maxLength}

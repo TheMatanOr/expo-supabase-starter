@@ -23,7 +23,7 @@ export const WelcomeStep: React.FC<StepProps> = ({
 	}, []);
 
 	const handleEmailContinue = () => {
-		onNext();
+		onNext?.();
 	};
 
 	const handleSocialLogin = (provider: "google" | "apple") => {

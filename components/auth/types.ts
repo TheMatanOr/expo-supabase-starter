@@ -14,10 +14,12 @@ export interface AuthData {
 export interface StepProps {
 	data: AuthData;
 	onDataChange: (data: Partial<AuthData>) => void;
-	onNext: () => void;
+	onNext?: () => void;
 	onBack?: () => void;
 	onClose?: () => void;
 	mode?: "signup" | "login";
+	onboardingData?: any;
+	onSwitchMode?: (newMode: "signup" | "login") => void;
 }
 
 export interface AuthBottomSheetProps {

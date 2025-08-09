@@ -69,7 +69,7 @@ export const authDemoData = {
 
 // Constants
 export const authConstants = {
-	verificationCodeLength: 5,
+	verificationCodeLength: 6,
 	animationDuration: 200,
 	snapPoints: {
 		welcome: "55%",

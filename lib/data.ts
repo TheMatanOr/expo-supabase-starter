@@ -137,7 +137,7 @@ export const signupData = {
 	continueWithApple: "Continue with Apple",
 	createAccount: "Create Account",
 	alreadyHaveAccount: "Already have an account?",
-	loginText: "Log in",
+	loginText: "Login",
 	termsText:
 		"By continuing, you agree to our Terms of Service and Privacy Policy",
 	confettiDuration: 3000, // 3 seconds
