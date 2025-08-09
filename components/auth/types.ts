@@ -20,7 +20,7 @@ export interface StepProps {
 	mode?: "signup" | "login";
 }
 
-export interface AuthContainerProps {
+export interface AuthBottomSheetProps {
 	isVisible: boolean;
 	onClose: () => void;
 	initialStep?: AuthStep;

@@ -10,11 +10,11 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import type {
 	AuthStep,
 	AuthData,
-	AuthContainerProps,
+	AuthBottomSheetProps,
 	StepConfig,
 } from "./types";
 
-interface AuthContainerLayoutProps extends AuthContainerProps {
+interface AuthBottomSheetLayoutProps extends AuthBottomSheetProps {
 	steps: Record<AuthStep, StepConfig>;
 	currentStep: AuthStep;
 	onStepChange: (step: AuthStep) => void;
@@ -22,7 +22,7 @@ interface AuthContainerLayoutProps extends AuthContainerProps {
 	onAuthDataChange: (data: Partial<AuthData>) => void;
 }
 
-export const AuthBottomSheet: React.FC<AuthContainerLayoutProps> = ({
+export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 	isVisible,
 	onClose,
 	steps,

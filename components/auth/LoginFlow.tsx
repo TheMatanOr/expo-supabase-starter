@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { AuthBottomSheet } from "./AuthContainer";
+import { AuthBottomSheet } from "./AuthBottomSheet";
 import { WelcomeStep, EmailStep, VerificationStep } from "./steps";
 import type {
 	AuthStep,
 	AuthData,
-	AuthContainerProps,
+	AuthBottomSheetProps,
 	StepConfig,
 } from "./types";
 
@@ -37,7 +37,7 @@ const AUTH_STEPS: Record<AuthStep, StepConfig> = {
 	},
 };
 
-interface LoginFlowProps extends Omit<AuthContainerProps, "mode"> {
+interface LoginFlowProps extends Omit<AuthBottomSheetProps, "mode"> {
 	onSuccess?: (data: AuthData) => void;
 }
 
