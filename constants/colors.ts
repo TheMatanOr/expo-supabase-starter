@@ -33,7 +33,7 @@ export const colors = {
 		popover: "hsl(240, 10%, 3.90%)",
 		popoverForeground: "hsl(0, 0%, 98%)",
 		primary: "hsl(312 94.7% 33.8%)",
-		primaryForeground: "hsl(240, 5.90%, 10%)",
+		primaryForeground: "hsl(360 0% 100%)",
 		secondary: "hsl(240, 3.70%, 15.90%)",
 		secondaryForeground: "hsl(0, 0%, 98%)",
 		muted: "hsl(240, 3.70%, 15.90%)",

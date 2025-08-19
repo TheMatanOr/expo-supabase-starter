@@ -6,6 +6,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PortalProvider } from "@gorhom/portal";
 
 import { AuthProvider, useAuth } from "@/context/supabase-provider";
+import { BottomSheetProvider } from "@/context/bottom-sheet-provider";
+import { SelectBottomSheet } from "@/components/ui/select";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,7 +21,10 @@ export default function RootLayout() {
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<PortalProvider>
 				<AuthProvider>
-					<RootNavigator />
+					<BottomSheetProvider>
+						<RootNavigator />
+						<SelectBottomSheet />
+					</BottomSheetProvider>
 				</AuthProvider>
 			</PortalProvider>
 		</GestureHandlerRootView>
