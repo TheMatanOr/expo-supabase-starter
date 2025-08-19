@@ -1,5 +1,12 @@
-import React, { useState, useRef } from "react";
-import { View, Animated, ScrollView } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import {
+	View,
+	Animated,
+	ScrollView,
+	Keyboard,
+	KeyboardEvent,
+	Platform,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 import { SafeAreaView } from "@/components/safe-area-view";
@@ -42,8 +49,54 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 	const [currentStepIndex, setCurrentStepIndex] = useState(initialStep);
 	const fadeAnim = useRef(new Animated.Value(1)).current;
 	const slideAnim = useRef(new Animated.Value(0)).current;
+	const buttonAnim = useRef(new Animated.Value(0)).current;
+	const [keyboardHeight, setKeyboardHeight] = useState(0);
+	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
 	const currentStep: OnboardingStep = onboardingSteps[currentStepIndex];
+
+	// Keyboard event handlers
+	useEffect(() => {
+		const keyboardWillShow = (event: KeyboardEvent) => {
+			const keyboardHeightValue = event.endCoordinates.height;
+			setKeyboardHeight(keyboardHeightValue);
+			setIsKeyboardVisible(true);
+
+			// Animate button to float above keyboard with smooth easing
+			Animated.timing(buttonAnim, {
+				toValue: keyboardHeightValue,
+				duration: 250,
+				useNativeDriver: false,
+			}).start();
+		};
+
+		const keyboardWillHide = () => {
+			setIsKeyboardVisible(false);
+
+			// Animate button back to normal position
+			Animated.timing(buttonAnim, {
+				toValue: 0,
+				duration: 250,
+				useNativeDriver: false,
+			}).start();
+		};
+
+		// Add keyboard event listeners
+		const showSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+			keyboardWillShow,
+		);
+		const hideSubscription = Keyboard.addListener(
+			Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+			keyboardWillHide,
+		);
+
+		// Cleanup listeners
+		return () => {
+			showSubscription.remove();
+			hideSubscription.remove();
+		};
+	}, [buttonAnim]);
 
 	// Animate step transition
 	const animateStepTransition = (direction: "next" | "prev"): void => {
@@ -185,6 +238,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			<ScrollView
 				className="flex-1 px-4 pt-6"
 				showsVerticalScrollIndicator={false}
+				contentContainerStyle={{ paddingBottom: 100 }} // Add padding for floating button
 			>
 				<Animated.View
 					style={{
@@ -253,7 +307,24 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			</ScrollView>
 
 			{/* Continue Button */}
-			<View className="p-4">
+			<Animated.View
+				className="absolute bottom-12 left-0 right-0 p-4 "
+				style={{
+					transform: [
+						{
+							translateY: buttonAnim.interpolate({
+								inputRange: [0, keyboardHeight],
+								outputRange: [0, -keyboardHeight + 20], // 20px margin from keyboard
+								extrapolate: "clamp",
+							}),
+						},
+					],
+
+					shadowOpacity: isKeyboardVisible ? 0.1 : 0,
+					shadowRadius: 8,
+					elevation: isKeyboardVisible ? 8 : 0,
+				}}
+			>
 				<Button
 					variant="default"
 					className="w-full"
@@ -269,7 +340,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 								: onboardingTexts.buttons.continue}
 					</Text>
 				</Button>
-			</View>
+			</Animated.View>
 
 			{/* Sign-Up Flow */}
 			<SignUpFlow

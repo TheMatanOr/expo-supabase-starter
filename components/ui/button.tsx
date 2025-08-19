@@ -4,7 +4,6 @@ import { Pressable, View, Text, ActivityIndicator } from "react-native";
 import { cn } from "@/lib/utils";
 import { TextClassContext } from "@/components/ui/text";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { colors } from "@/constants/colors";
 
 const buttonVariants = cva(
 	"group flex items-center justify-center rounded-full web:ring-offset-background web:transition-colors web:focus-visible:outline-none web:focus-visible:ring-2 web:focus-visible:ring-ring web:focus-visible:ring-offset-2",
@@ -99,7 +98,7 @@ const Button = React.forwardRef<
 		},
 		ref,
 	) => {
-		const { colorScheme } = useColorScheme();
+		const { colors } = useColorScheme();
 		const isDisabled = props.disabled || loading;
 
 		// Determine button colors for elevation shadow
@@ -107,11 +106,11 @@ const Button = React.forwardRef<
 			if (!elevate || isDisabled) return "transparent";
 			switch (variant) {
 				case "default":
-					return colors[colorScheme || "dark"].primary;
+					return colors.primary;
 				case "destructive":
-					return colors[colorScheme || "dark"].destructive;
+					return colors.destructive;
 				default:
-					return colors[colorScheme || "dark"].foreground;
+					return colors.foreground;
 			}
 		};
 
@@ -150,8 +149,8 @@ const Button = React.forwardRef<
 								size="small"
 								color={
 									variant === "muted"
-										? colors[colorScheme || "dark"].mutedForeground
-										: colors[colorScheme || "dark"].primaryForeground
+										? colors.mutedForeground
+										: colors.primaryForeground
 								}
 							/>
 						)}

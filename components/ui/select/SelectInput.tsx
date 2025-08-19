@@ -3,7 +3,6 @@ import { View, TouchableOpacity } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { Text } from "@/components/ui/text";
 import { Muted } from "@/components/ui/typography";
-import { colors } from "@/constants/colors";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { cn } from "@/lib/utils";
 import { useBottomSheet } from "@/context/bottom-sheet-provider";
@@ -24,7 +23,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 	noOptionsText = "No options available",
 	filterFunction,
 }) => {
-	const { colorScheme } = useColorScheme();
+	const { colors } = useColorScheme();
 	const { showBottomSheet } = useBottomSheet();
 
 	// Convert value to array for consistent handling
@@ -141,8 +140,8 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 				className,
 			)}
 			style={{
-				backgroundColor: colors[colorScheme || "dark"].input,
-				borderColor: colors[colorScheme || "dark"].border,
+				backgroundColor: colors.input,
+				borderColor: colors.border,
 			}}
 		>
 			<View className="flex-1 mr-3">
@@ -153,8 +152,8 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 					)}
 					style={{
 						color: isPlaceholderText
-							? colors[colorScheme || "dark"].mutedForeground
-							: colors[colorScheme || "dark"].foreground,
+							? colors.mutedForeground
+							: colors.foreground,
 					}}
 					numberOfLines={1}
 				>
@@ -169,7 +168,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 						<Text
 							className="text-primary-foreground text-xs font-bold"
 							style={{
-								color: colors[colorScheme || "dark"].primaryForeground,
+								color: colors.primaryForeground,
 							}}
 						>
 							{selectedValues.length}
@@ -180,11 +179,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
 				<AntDesign
 					name="down"
 					size={16}
-					color={
-						disabled
-							? colors[colorScheme || "dark"].mutedForeground
-							: colors[colorScheme || "dark"].foreground
-					}
+					color={disabled ? colors.mutedForeground : colors.foreground}
 				/>
 			</View>
 		</TouchableOpacity>

@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import LottieView from "lottie-react-native";
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
-import { colors } from "@/constants/colors";
+import { useColorScheme } from "@/lib/useColorScheme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Zocial from "@expo/vector-icons/Zocial";
 import { handleAuthSuccess, closeAuthSheet } from "../authHelpers";
@@ -14,6 +14,7 @@ export const WelcomeStep: React.FC<StepProps> = ({
 	onClose,
 	mode = "signup",
 }) => {
+	const { colors } = useColorScheme();
 	const animation = useRef<LottieView>(null);
 
 	useEffect(() => {
@@ -74,7 +75,7 @@ export const WelcomeStep: React.FC<StepProps> = ({
 				<Button
 					onPress={handleEmailContinue}
 					iconStart={
-						<Zocial name="email" size={24} color={colors.dark.foreground} />
+						<Zocial name="email" size={24} color={colors.primaryForeground} />
 					}
 					size="lg"
 				>
@@ -89,7 +90,7 @@ export const WelcomeStep: React.FC<StepProps> = ({
 					className="flex-1"
 					onPress={() => handleSocialLogin("google")}
 				>
-					<AntDesign name="google" size={24} color={colors.dark.foreground} />
+					<AntDesign name="google" size={24} color={colors.foreground} />
 				</Button>
 				<Button
 					variant="outline"
@@ -97,7 +98,7 @@ export const WelcomeStep: React.FC<StepProps> = ({
 					className="flex-1"
 					onPress={() => handleSocialLogin("apple")}
 				>
-					<AntDesign name="apple1" size={24} color={colors.dark.foreground} />
+					<AntDesign name="apple1" size={24} color={colors.foreground} />
 				</Button>
 			</View>
 

@@ -50,7 +50,15 @@ export const useOnboarding = () => {
 				: [...currentSelections, optionId];
 		} else {
 			// Single-select: always replace with new selection (no deselection)
-			newSelections = [optionId];
+			// For input fields, don't store empty strings
+			if (
+				stepId === "full_name" &&
+				(!optionId || optionId.trim().length === 0)
+			) {
+				newSelections = []; // Clear the selection if input is empty
+			} else {
+				newSelections = [optionId];
+			}
 		}
 
 		// Update form value (don't trigger validation during selection)
@@ -79,6 +87,13 @@ export const useOnboarding = () => {
 
 		const selections = watchedValues[stepId] || [];
 		const hasSelections = selections.length > 0;
+
+		// For input fields (like full_name), check that the content is meaningful
+		if (stepId === "full_name" && hasSelections) {
+			const nameValue = selections[0];
+			// Check if the name is not just whitespace or empty
+			return Boolean(nameValue && nameValue.trim().length > 0);
+		}
 
 		// Don't check field errors during step navigation, only check if user made selections
 		return hasSelections;
@@ -166,7 +181,11 @@ export const useOnboarding = () => {
 
 		// Count completed steps
 		let completedSteps = 0;
-		if (formData.full_name.length > 0) completedSteps++;
+		if (
+			formData.full_name.length > 0 &&
+			formData.full_name[0]?.trim().length > 0
+		)
+			completedSteps++;
 		if (formData.fitness_level.length > 0) completedSteps++;
 		if (formData.goals.length > 0) completedSteps++;
 		if (formData.workout_frequency.length > 0) completedSteps++;

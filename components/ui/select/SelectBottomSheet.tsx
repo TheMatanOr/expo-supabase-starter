@@ -10,7 +10,6 @@ import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { H3, Muted } from "@/components/ui/typography";
-import { colors } from "@/constants/colors";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { cn } from "@/lib/utils";
 import {
@@ -24,7 +23,7 @@ interface SelectBottomSheetProps {
 }
 
 export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
-	const { colorScheme } = useColorScheme();
+	const { colors } = useColorScheme();
 	const bottomSheetRef = useRef<BottomSheet>(null);
 
 	const {
@@ -116,16 +115,10 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 							item.disabled && "opacity-50",
 						)}
 						style={{
-							backgroundColor: selected
-								? colors[colorScheme || "dark"].card
-								: colors[colorScheme || "dark"].card,
+							backgroundColor: selected ? colors.card : colors.card,
 							borderWidth: 2, // Keep consistent border width to prevent size jumps
-							borderColor: selected
-								? colors[colorScheme || "dark"].primary
-								: "transparent", // Transparent border for unselected items
-							shadowColor: selected
-								? colors[colorScheme || "dark"].primary
-								: colors[colorScheme || "dark"].foreground,
+							borderColor: selected ? colors.primary : "transparent", // Transparent border for unselected items
+							shadowColor: selected ? colors.primary : colors.foreground,
 							shadowOffset: {
 								width: 0,
 								height: selected ? 4 : 1,
@@ -144,10 +137,10 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 								)}
 								style={{
 									color: selected
-										? colors[colorScheme || "dark"].primary
+										? colors.primary
 										: item.disabled
-											? colors[colorScheme || "dark"].mutedForeground
-											: colors[colorScheme || "dark"].foreground,
+											? colors.mutedForeground
+											: colors.foreground,
 								}}
 							>
 								{item.label}
@@ -157,8 +150,8 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 									className="text-sm mt-1"
 									style={{
 										color: selected
-											? `${colors[colorScheme || "dark"].primary}80`
-											: colors[colorScheme || "dark"].mutedForeground,
+											? `${colors.primary}80`
+											: colors.mutedForeground,
 									}}
 								>
 									{item.description}
@@ -172,8 +165,8 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 								<View
 									className="w-7 h-7 rounded-full items-center justify-center mr-2"
 									style={{
-										backgroundColor: colors[colorScheme || "dark"].primary,
-										shadowColor: colors[colorScheme || "dark"].primary,
+										backgroundColor: colors.primary,
+										shadowColor: colors.primary,
 										shadowOffset: { width: 0, height: 2 },
 										shadowOpacity: 0.4,
 										shadowRadius: 4,
@@ -183,7 +176,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 									<AntDesign
 										name="check"
 										size={16}
-										color={colors[colorScheme || "dark"].primaryForeground}
+										color={colors.primaryForeground}
 									/>
 								</View>
 							)}
@@ -192,8 +185,8 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 								<View
 									className="w-6 h-6 rounded-full items-center justify-center"
 									style={{
-										backgroundColor: colors[colorScheme || "dark"].primary,
-										shadowColor: colors[colorScheme || "dark"].primary,
+										backgroundColor: colors.primary,
+										shadowColor: colors.primary,
 										shadowOffset: { width: 0, height: 2 },
 										shadowOpacity: 0.4,
 										shadowRadius: 4,
@@ -203,7 +196,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 									<AntDesign
 										name="check"
 										size={14}
-										color={colors[colorScheme || "dark"].primaryForeground}
+										color={colors.primaryForeground}
 									/>
 								</View>
 							)}
@@ -213,7 +206,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 								<View
 									className="w-6 h-6 rounded-full border-2"
 									style={{
-										borderColor: colors[colorScheme || "dark"].border,
+										borderColor: colors.border,
 										backgroundColor: "transparent",
 									}}
 								/>
@@ -223,7 +216,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 				</View>
 			);
 		},
-		[handleItemPress, isSelected, multiple, colorScheme],
+		[handleItemPress, isSelected, multiple, colors],
 	);
 
 	if (!isVisible) return null;
@@ -243,14 +236,14 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 			android_keyboardInputMode="adjustResize"
 			animateOnMount={true}
 			handleIndicatorStyle={{
-				backgroundColor: colors[colorScheme || "dark"].border,
+				backgroundColor: colors.border,
 				width: 40,
 			}}
 			backgroundStyle={{
-				backgroundColor: colors[colorScheme || "dark"].background,
+				backgroundColor: colors.background,
 				borderTopLeftRadius: 24,
 				borderTopRightRadius: 24,
-				shadowColor: colors[colorScheme || "dark"].foreground,
+				shadowColor: colors.foreground,
 				shadowOffset: {
 					width: 0,
 					height: -2,
@@ -269,11 +262,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 						className="ml-2 p-2"
 						hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
 					>
-						<AntDesign
-							name="close"
-							size={24}
-							color={colors[colorScheme || "dark"].foreground}
-						/>
+						<AntDesign name="close" size={24} color={colors.foreground} />
 					</TouchableOpacity>
 				</View>
 
@@ -292,7 +281,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 								<AntDesign
 									name="search1"
 									size={20}
-									color={colors[colorScheme || "dark"].mutedForeground}
+									color={colors.mutedForeground}
 								/>
 							}
 						/>
@@ -327,8 +316,8 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 				<View
 					className="border-t px-6 py-5"
 					style={{
-						borderTopColor: colors[colorScheme || "dark"].border,
-						backgroundColor: colors[colorScheme || "dark"].background,
+						borderTopColor: colors.border,
+						backgroundColor: colors.background,
 					}}
 				>
 					<Button
@@ -343,7 +332,7 @@ export const SelectBottomSheet: React.FC<SelectBottomSheetProps> = () => {
 								<AntDesign
 									name="check"
 									size={20}
-									color={colors[colorScheme || "dark"].primaryForeground}
+									color={colors.primaryForeground}
 								/>
 							) : undefined
 						}

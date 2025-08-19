@@ -1,8 +1,8 @@
 import * as React from "react";
-import { TextInput, View, Text, type TextInputProps } from "react-native";
+import { TextInput, View, type TextInputProps } from "react-native";
 import { cn } from "@/lib/utils";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { colors } from "@/constants/colors";
+import { Text } from "@/components/ui/text";
 
 interface InputProps extends TextInputProps {
 	iconStart?: React.ReactNode;
@@ -11,6 +11,8 @@ interface InputProps extends TextInputProps {
 	disabled?: boolean;
 	variant?: "default" | "search";
 	containerClassName?: string;
+	placeholderClassName?: string;
+	className?: string;
 }
 
 const Input = React.forwardRef<
@@ -31,27 +33,27 @@ const Input = React.forwardRef<
 		},
 		ref,
 	) => {
-		const { colorScheme } = useColorScheme();
+		const { colors } = useColorScheme();
 		const hasError = !!error;
 		const isDisabled = disabled || props.editable === false;
 
 		// Get proper colors based on state
 		const getBorderColor = () => {
-			if (hasError) return colors[colorScheme || "dark"].destructive;
-			return colors[colorScheme || "dark"].border;
+			if (hasError) return colors.destructive;
+			return colors.border;
 		};
 
 		const getBackgroundColor = () => {
-			return colors[colorScheme || "dark"].input;
+			return colors.input;
 		};
 
 		const getTextColor = () => {
-			if (isDisabled) return colors[colorScheme || "dark"].mutedForeground;
-			return colors[colorScheme || "dark"].foreground;
+			if (isDisabled) return colors.mutedForeground;
+			return colors.foreground;
 		};
 
 		const getPlaceholderColor = () => {
-			return colors[colorScheme || "dark"].mutedForeground;
+			return colors.mutedForeground;
 		};
 
 		if (iconStart || iconEnd || hasError) {
@@ -100,10 +102,7 @@ const Input = React.forwardRef<
 
 					{hasError && (
 						<View className="mt-2 px-1">
-							<Text
-								className="text-sm"
-								style={{ color: colors[colorScheme || "dark"].destructive }}
-							>
+							<Text className="text-sm" style={{ color: colors.destructive }}>
 								{error}
 							</Text>
 						</View>

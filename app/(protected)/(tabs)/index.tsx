@@ -9,11 +9,10 @@ import { Text } from "@/components/ui/text";
 import { H1, Muted, H3 } from "@/components/ui/typography";
 import { SafeAreaView } from "@/components/safe-area-view";
 import { SelectInput } from "@/components/ui/select";
-import { colors } from "@/constants/colors";
 import { useColorScheme } from "@/lib/useColorScheme";
 
 export default function Home() {
-	const { colorScheme } = useColorScheme();
+	const { colors: themeColors } = useColorScheme();
 	const [selectedCountry, setSelectedCountry] = useState<string>("");
 	const [selectedFruits, setSelectedFruits] = useState<string[]>([]);
 	const [selectedWorkoutType, setSelectedWorkoutType] = useState<string>("");
@@ -174,7 +173,7 @@ export default function Home() {
 									<AntDesign
 										name="user"
 										size={20}
-										color={colors[colorScheme || "dark"].mutedForeground}
+										color={themeColors.mutedForeground}
 									/>
 								}
 							/>
@@ -203,8 +202,8 @@ export default function Home() {
 										size={20}
 										color={
 											inputError
-												? colors[colorScheme || "dark"].destructive
-												: colors[colorScheme || "dark"].mutedForeground
+												? themeColors.destructive
+												: themeColors.mutedForeground
 										}
 									/>
 								}
@@ -213,7 +212,7 @@ export default function Home() {
 										<AntDesign
 											name="checkcircle"
 											size={20}
-											color={colors[colorScheme || "dark"].primary}
+											color={themeColors.primary}
 										/>
 									) : undefined
 								}
@@ -230,7 +229,7 @@ export default function Home() {
 									<AntDesign
 										name="lock"
 										size={20}
-										color={colors[colorScheme || "dark"].mutedForeground}
+										color={themeColors.mutedForeground}
 									/>
 								}
 							/>
@@ -252,7 +251,7 @@ export default function Home() {
 								<AntDesign
 									name="arrowright"
 									size={20}
-									color={colors[colorScheme || "dark"].primaryForeground}
+									color={themeColors.primaryForeground}
 								/>
 							) : undefined
 						}
@@ -275,7 +274,7 @@ export default function Home() {
 							<AntDesign
 								name="setting"
 								size={20}
-								color={colors[colorScheme || "dark"].foreground}
+								color={themeColors.foreground}
 							/>
 						}
 						onPress={() => router.push("/(protected)/(tabs)/settings")}

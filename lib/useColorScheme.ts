@@ -1,12 +1,10 @@
-import { useColorScheme as useNativewindColorScheme } from "nativewind";
+import { colors } from "@/constants/colors";
 
 export function useColorScheme() {
-	const { colorScheme, setColorScheme, toggleColorScheme } =
-		useNativewindColorScheme();
+	// Return a single unified theme - no more light/dark switching
 	return {
-		colorScheme: colorScheme ?? "dark",
-		isDarkColorScheme: colorScheme === "dark",
-		setColorScheme,
-		toggleColorScheme,
+		colorScheme: "unified",
+		isDarkColorScheme: false, // Always false since we have one theme
+		colors, // Direct access to the unified colors
 	};
 }

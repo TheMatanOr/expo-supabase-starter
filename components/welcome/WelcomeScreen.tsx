@@ -1,15 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, Animated, TouchableOpacity } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { AntDesign } from "@expo/vector-icons";
 
-import { Image } from "@/components/ui/image";
-import { SafeAreaView } from "@/components/safe-area-view";
-import { Button } from "@/components/ui/button";
-import { Text } from "@/components/ui/text";
-import { H1, Muted } from "@/components/ui/typography";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { colors } from "@/constants/colors";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { SafeAreaView } from "@/components/safe-area-view";
+import { H1, Muted } from "@/components/ui/typography";
+import { Text } from "@/components/ui/text";
+import { Image } from "@/components/ui/image";
 import { LoginFlow } from "@/components/auth";
 import { welcomeSlides, welcomeTexts, welcomeAnimations } from "./data";
 import type { WelcomeSlide, WelcomeScreenProps } from "./types";
@@ -19,7 +21,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 	onLogin,
 }) => {
 	const router = useRouter();
-	const { colorScheme } = useColorScheme();
+	const { colors } = useColorScheme();
 	const params = useLocalSearchParams();
 
 	// Initialize to last slide if coming from onboarding, otherwise start at 0
@@ -160,7 +162,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
 				{/* Linear gradient for smooth transition */}
 				<LinearGradient
-					colors={["transparent", colors[colorScheme || "dark"].background]}
+					colors={["rgba(255, 255, 255, 0)", colors.background]}
 					style={{
 						height: 100,
 						width: "100%",
@@ -205,10 +207,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 									style={{
 										backgroundColor: dotAnimations[index].interpolate({
 											inputRange: [0, 1],
-											outputRange: [
-												"rgba(156, 163, 175, 0.3)",
-												colors[colorScheme || "dark"].primary,
-											],
+											outputRange: ["rgba(156, 163, 175, 0.3)", colors.primary],
 										}),
 										transform: [
 											{

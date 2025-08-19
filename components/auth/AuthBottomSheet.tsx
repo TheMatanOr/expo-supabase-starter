@@ -5,7 +5,6 @@ import {
 	CustomBottomSheet,
 	CustomBottomSheetRef,
 } from "@/components/ui/bottom-sheet";
-import { colors } from "@/constants/colors";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { authConstants } from "./data";
 import type {
@@ -37,7 +36,7 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 	onSwitchMode,
 	onboardingData,
 }) => {
-	const { colorScheme } = useColorScheme();
+	const { colors } = useColorScheme();
 	const bottomSheetRef = useRef<CustomBottomSheetRef>(null);
 	const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -119,22 +118,14 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 			<>
 				{showBackButton ? (
 					<TouchableOpacity onPress={handleBack} className="mb-8">
-						<AntDesign
-							name="arrowleft"
-							size={32}
-							color={colors[colorScheme || "dark"].foreground}
-						/>
+						<AntDesign name="arrowleft" size={32} color={colors.foreground} />
 					</TouchableOpacity>
 				) : currentStep === "welcome" ? (
 					<TouchableOpacity
 						onPress={onClose}
 						className="absolute top-6 right-8 p-2 z-20"
 					>
-						<AntDesign
-							name="close"
-							size={24}
-							color={colors[colorScheme || "dark"].foreground}
-						/>
+						<AntDesign name="close" size={24} color={colors.foreground} />
 					</TouchableOpacity>
 				) : null}
 			</>

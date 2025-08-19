@@ -11,7 +11,7 @@ import BottomSheet, {
 	BottomSheetView,
 	BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
-import { colors } from "@/constants/colors";
+import { useColorScheme } from "@/lib/useColorScheme";
 
 interface BottomSheetProps {
 	isVisible: boolean;
@@ -29,6 +29,7 @@ export const CustomBottomSheet = forwardRef<
 	CustomBottomSheetRef,
 	BottomSheetProps
 >(({ isVisible, onClose, children, snapPoints, index = 0 }, ref) => {
+	const { colors } = useColorScheme();
 	const bottomSheetRef = useRef<BottomSheet>(null);
 
 	useImperativeHandle(ref, () => ({
@@ -75,10 +76,10 @@ export const CustomBottomSheet = forwardRef<
 			animateOnMount={true}
 			handleComponent={null}
 			backgroundStyle={{
-				backgroundColor: colors.dark.background,
+				backgroundColor: colors.background,
 				borderTopLeftRadius: 50,
 				borderTopRightRadius: 50,
-				borderTopColor: colors.dark.primary,
+				borderTopColor: colors.primary,
 				borderTopWidth: 0,
 				shadowColor: "#9d009896",
 				shadowOffset: {

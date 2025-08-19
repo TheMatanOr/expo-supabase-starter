@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const SwitchWeb = React.forwardRef<
 	SwitchPrimitives.RootRef,
@@ -36,13 +37,9 @@ const SwitchWeb = React.forwardRef<
 SwitchWeb.displayName = "SwitchWeb";
 
 const RGB_COLORS = {
-	light: {
-		primary: "rgb(24, 24, 27)",
-		input: "rgb(228, 228, 231)",
-	},
-	dark: {
-		primary: "rgb(250, 250, 250)",
-		input: "rgb(39, 39, 42)",
+	unified: {
+		primary: "rgb(147, 51, 234)", // hsl(312 94.7% 33.8%) converted to RGB
+		input: "rgb(39, 39, 42)", // hsl(240, 3.70%, 15.90%) converted to RGB
 	},
 } as const;
 
@@ -50,14 +47,15 @@ const SwitchNative = React.forwardRef<
 	SwitchPrimitives.RootRef,
 	SwitchPrimitives.RootProps
 >(({ className, ...props }, ref) => {
-	const { colorScheme } = useColorScheme();
+	const { colors } = useColorScheme();
+	const [isPressed, setIsPressed] = useState(false);
 	const translateX = useDerivedValue(() => (props.checked ? 18 : 0));
 	const animatedRootStyle = useAnimatedStyle(() => {
 		return {
 			backgroundColor: interpolateColor(
 				translateX.value,
 				[0, 18],
-				[RGB_COLORS[colorScheme].input, RGB_COLORS[colorScheme].primary],
+				[RGB_COLORS.unified.input, RGB_COLORS.unified.primary],
 			),
 		};
 	});

@@ -1,10 +1,9 @@
 import { Stack } from "expo-router";
 
 import { useColorScheme } from "@/lib/useColorScheme";
-import { colors } from "@/constants/colors";
 
 export default function PublicLayout() {
-	const { colorScheme } = useColorScheme();
+	const { colors: themeColors } = useColorScheme();
 
 	return (
 		<Stack screenOptions={{ headerShown: false, gestureEnabled: false }}>
@@ -20,15 +19,9 @@ export default function PublicLayout() {
 					headerShown: true,
 					headerTitle: "Sign Up",
 					headerStyle: {
-						backgroundColor:
-							colorScheme === "dark"
-								? colors.dark.background
-								: colors.light.background,
+						backgroundColor: themeColors.background,
 					},
-					headerTintColor:
-						colorScheme === "dark"
-							? colors.dark.foreground
-							: colors.light.foreground,
+					headerTintColor: themeColors.foreground,
 					gestureEnabled: true,
 					sheetAllowedDetents: [0.5],
 					sheetGrabberVisible: true,
@@ -42,15 +35,9 @@ export default function PublicLayout() {
 					headerShown: true,
 					headerTitle: "Sign In",
 					headerStyle: {
-						backgroundColor:
-							colorScheme === "dark"
-								? colors.dark.background
-								: colors.light.background,
+						backgroundColor: themeColors.background,
 					},
-					headerTintColor:
-						colorScheme === "dark"
-							? colors.dark.foreground
-							: colors.light.foreground,
+					headerTintColor: themeColors.foreground,
 					gestureEnabled: true,
 				}}
 			/>
