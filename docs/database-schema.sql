@@ -1,87 +1,97 @@
--- User Profiles Table
--- This table extends the built-in auth.users table with additional profile information
--- and stores onboarding data
-
+-- User profiles table
 CREATE TABLE user_profiles (
-    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-    email TEXT NOT NULL,
-    full_name TEXT, -- Optional, will be populated from OAuth providers or asked later
-    
-    -- Onboarding data as separate columns for easy querying
-    fitness_level TEXT CHECK (fitness_level IN ('beginner', 'intermediate', 'advanced')),
-    goals TEXT[] DEFAULT '{}', -- Array of goals: weight_loss, muscle_gain, endurance, flexibility, general_fitness
-    workout_frequency TEXT CHECK (workout_frequency IN ('2-3_times', '4-5_times', '6-7_times')),
-    
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+	email TEXT NOT NULL,
+	full_name TEXT NOT NULL,
+	gender TEXT CHECK (gender IN ('male', 'female',  'prefer_not_to_say')),
+	vision TEXT NOT NULL, -- User's vision statement
+	count_per_day TEXT CHECK (count_per_day IN ('5', '10', '20')), -- How many times per day to read vision
+	onboarding_completed BOOLEAN DEFAULT FALSE,
+	onboarding_data JSONB, -- Store complete onboarding data as JSON
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Add RLS (Row Level Security) policies
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+-- Vision tracking table
+CREATE TABLE vision_readings (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+	date DATE NOT NULL,
+	read_count INTEGER DEFAULT 0, -- How many times they read their vision today
+	goal_count INTEGER NOT NULL, -- Their daily goal from onboarding
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+	UNIQUE(user_id, date) -- One record per user per day
+);
 
--- Users can only see and modify their own profile
+-- Enable Row Level Security
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vision_readings ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for user_profiles
 CREATE POLICY "Users can view own profile" ON user_profiles
-    FOR SELECT USING (auth.uid() = id);
+	FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can insert own profile" ON user_profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
+	FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own profile" ON user_profiles
-    FOR UPDATE USING (auth.uid() = id);
+	FOR UPDATE USING (auth.uid() = user_id);
 
--- Create indexes for better performance
+-- RLS Policies for vision_readings
+CREATE POLICY "Users can view own vision readings" ON vision_readings
+	FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own vision readings" ON vision_readings
+	FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own vision readings" ON vision_readings
+	FOR UPDATE USING (auth.uid() = user_id);
+
+-- Indexes for performance
+CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);
 CREATE INDEX idx_user_profiles_email ON user_profiles(email);
-CREATE INDEX idx_user_profiles_fitness_level ON user_profiles(fitness_level);
-CREATE INDEX idx_user_profiles_goals ON user_profiles USING GIN (goals);
-CREATE INDEX idx_user_profiles_workout_frequency ON user_profiles(workout_frequency);
+CREATE INDEX idx_user_profiles_gender ON user_profiles(gender);
+CREATE INDEX idx_user_profiles_count_per_day ON user_profiles(count_per_day);
 
--- Function to automatically create user profile on signup
-CREATE OR REPLACE FUNCTION public.handle_new_user()
+CREATE INDEX idx_vision_readings_user_id ON vision_readings(user_id);
+CREATE INDEX idx_vision_readings_date ON vision_readings(date);
+CREATE INDEX idx_vision_readings_user_date ON vision_readings(user_id, date);
+
+-- Function to update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.user_profiles (id, email, full_name)
-    VALUES (
-        NEW.id,
-        NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', '')
-    );
-    RETURN NEW;
+	NEW.updated_at = NOW();
+	RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ language 'plpgsql';
 
--- Trigger to automatically create profile when user signs up
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- Function to update the updated_at timestamp
-CREATE OR REPLACE FUNCTION public.update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to automatically update updated_at
+-- Triggers to automatically update updated_at
 CREATE TRIGGER update_user_profiles_updated_at
-    BEFORE UPDATE ON user_profiles
-    FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+	BEFORE UPDATE ON user_profiles
+	FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Example queries for onboarding data:
--- Find users by fitness level:
--- SELECT * FROM user_profiles WHERE fitness_level = 'beginner';
+CREATE TRIGGER update_vision_readings_updated_at
+	BEFORE UPDATE ON vision_readings
+	FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Find users with specific goals:
--- SELECT * FROM user_profiles WHERE 'weight_loss' = ANY(goals);
+-- Sample queries for the vision tracking app:
 
--- Find users by workout frequency:
--- SELECT * FROM user_profiles WHERE workout_frequency = '4-5_times';
+-- Get user's profile with vision:
+-- SELECT full_name, gender, vision, count_per_day FROM user_profiles WHERE id = 'user_id';
 
--- Get user's complete onboarding profile:
--- SELECT fitness_level, goals, workout_frequency FROM user_profiles WHERE id = 'user_id';
+-- Get user's vision reading progress for today:
+-- SELECT read_count, goal_count FROM vision_readings WHERE user_id = 'user_id' AND date = CURRENT_DATE;
 
--- Grant necessary permissions (adjust based on your needs)
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON public.user_profiles TO authenticated;
-GRANT SELECT ON public.user_profiles TO anon;
+-- Get user's vision reading progress for the last 7 days:
+-- SELECT date, read_count, goal_count FROM vision_readings 
+-- WHERE user_id = 'user_id' AND date >= CURRENT_DATE - INTERVAL '7 days'
+-- ORDER BY date DESC;
+
+-- Update today's reading count:
+-- INSERT INTO vision_readings (user_id, date, read_count, goal_count)
+-- VALUES ('user_id', CURRENT_DATE, 1, 10)
+-- ON CONFLICT (user_id, date) 
+-- DO UPDATE SET read_count = vision_readings.read_count + 1, updated_at = NOW();

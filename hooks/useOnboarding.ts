@@ -1,148 +1,98 @@
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	onboardingDataSchema,
-	type OnboardingData,
+	onboardingFormDataSchema,
+	validateOnboardingData,
+	type OnboardingFormData,
 } from "@/lib/schemas/onboarding";
-
-// Form data type for React Hook Form
-export interface OnboardingFormData {
-	full_name: string[];
-	fitness_level: string[];
-	goals: string[];
-	workout_frequency: string[];
-}
 
 // Default form values
 const defaultValues: OnboardingFormData = {
-	full_name: [],
-	fitness_level: [],
-	goals: [],
-	workout_frequency: [],
+	full_name: "",
+	gender: "",
+	vision: "",
+	count_per_day: 10,
 };
 
 export const useOnboarding = () => {
 	// Initialize React Hook Form with Zod validation
 	const form = useForm<OnboardingFormData>({
-		resolver: zodResolver(onboardingDataSchema),
+		resolver: zodResolver(onboardingFormDataSchema),
 		defaultValues,
-		mode: "onSubmit", // Only validate on submit, not on every change
+		mode: "onSubmit", // Only validate on submit
 	});
 
+	const { formState, setValue, getValues, trigger, reset, watch } = form;
+
 	// Watch all form values for real-time updates
-	const watchedValues = useWatch({ control: form.control });
-	const { formState, setValue, getValues, trigger, reset } = form;
+	const watchedValues = watch();
 
-	// Handle option selection for a step
-	const handleOptionSelect = (
-		stepId: keyof OnboardingFormData,
-		optionId: string,
-		multiSelect: boolean = false,
+	// Handle form field updates
+	const updateField = (
+		field: keyof OnboardingFormData,
+		value: string | number,
 	) => {
-		const currentSelections = getValues(stepId) || [];
-
-		let newSelections: string[];
-
-		if (multiSelect) {
-			// Multi-select: toggle the option
-			newSelections = currentSelections.includes(optionId)
-				? currentSelections.filter((id) => id !== optionId)
-				: [...currentSelections, optionId];
+		if (field === "count_per_day") {
+			// Convert string to number for count_per_day
+			setValue(field, Number(value), {
+				shouldValidate: false,
+				shouldDirty: true,
+				shouldTouch: true,
+			});
 		} else {
-			// Single-select: always replace with new selection (no deselection)
-			// For input fields, don't store empty strings
-			if (
-				stepId === "full_name" &&
-				(!optionId || optionId.trim().length === 0)
-			) {
-				newSelections = []; // Clear the selection if input is empty
-			} else {
-				newSelections = [optionId];
-			}
+			setValue(field as any, value, {
+				shouldValidate: false,
+				shouldDirty: true,
+				shouldTouch: true,
+			});
 		}
-
-		// Update form value (don't trigger validation during selection)
-		setValue(stepId, newSelections, {
-			shouldValidate: false, // Don't validate during selection
-			shouldDirty: true,
-			shouldTouch: true,
-		});
 	};
 
-	// Check if an option is selected
+	// Check if an option is selected for single-select fields
 	const isOptionSelected = (
-		stepId: keyof OnboardingFormData,
+		field: keyof OnboardingFormData,
 		optionId: string,
 	): boolean => {
-		const currentSelections = watchedValues[stepId] || [];
-		return currentSelections.includes(optionId);
+		const currentValue = watchedValues[field];
+		return currentValue === optionId || currentValue === Number(optionId);
 	};
 
 	// Check if a step can continue (has valid selections)
 	const canContinueStep = (
-		stepId: keyof OnboardingFormData,
+		field: keyof OnboardingFormData,
 		required: boolean = true,
 	): boolean => {
 		if (!required) return true;
 
-		const selections = watchedValues[stepId] || [];
-		const hasSelections = selections.length > 0;
+		const value = watchedValues[field];
 
-		// For input fields (like full_name), check that the content is meaningful
-		if (stepId === "full_name" && hasSelections) {
-			const nameValue = selections[0];
-			// Check if the name is not just whitespace or empty
-			return Boolean(nameValue && nameValue.trim().length > 0);
+		// For string fields, check that the value exists and isn't just whitespace
+		if (typeof value === "string") {
+			return Boolean(value && value.trim().length > 0);
 		}
 
-		// Don't check field errors during step navigation, only check if user made selections
-		return hasSelections;
-	};
-
-	// Get structured onboarding data (validated) - only when form is complete
-	const getOnboardingData = (): OnboardingData | null => {
-		try {
-			const formData = getValues();
-
-			// Check if form has any data before validating
-			const hasAnyData =
-				formData.full_name.length > 0 ||
-				formData.fitness_level.length > 0 ||
-				formData.goals.length > 0 ||
-				formData.workout_frequency.length > 0;
-
-			if (!hasAnyData) {
-				return null; // Don't validate empty form
-			}
-
-			return onboardingDataSchema.parse(formData);
-		} catch (error) {
-			console.error("Invalid onboarding data:", error);
-			return null;
+		// For number fields, check that it's a valid positive number
+		if (typeof value === "number") {
+			return value > 0;
 		}
+
+		return false;
 	};
 
-	// Check if all steps are completed and valid
+	// Check if all steps are completed
 	const isFormComplete = (): boolean => {
-		const formData = getValues();
-
-		// Check that all required fields have selections
-		const hasAllSelections =
-			formData.full_name.length > 0 &&
-			formData.fitness_level.length > 0 &&
-			formData.goals.length > 0 &&
-			formData.workout_frequency.length > 0;
-
-		// Check that form is valid (no validation errors)
-		const isValid = formState.isValid;
-
-		return hasAllSelections && isValid;
+		return (
+			canContinueStep("full_name") &&
+			canContinueStep("gender") &&
+			canContinueStep("vision") &&
+			canContinueStep("count_per_day")
+		);
 	};
 
 	// Complete onboarding (validate and return data)
 	const completeOnboarding = async (): Promise<{
 		success: boolean;
-		data?: OnboardingData;
+		data?: OnboardingFormData;
 		error?: string;
 	}> => {
 		try {
@@ -156,16 +106,12 @@ export const useOnboarding = () => {
 				};
 			}
 
-			const onboardingData = getOnboardingData();
+			const formData = getValues();
 
-			if (!onboardingData) {
-				return {
-					success: false,
-					error: "Invalid onboarding data",
-				};
-			}
+			// Validate the complete form data
+			const validatedData = validateOnboardingData(formData);
 
-			return { success: true, data: onboardingData };
+			return { success: true, data: validatedData };
 		} catch (error: any) {
 			console.error("Complete onboarding error:", error);
 			return {
@@ -177,18 +123,12 @@ export const useOnboarding = () => {
 
 	// Get progress information
 	const getProgress = (currentStepIndex: number, totalSteps: number) => {
-		const formData = getValues();
-
 		// Count completed steps
 		let completedSteps = 0;
-		if (
-			formData.full_name.length > 0 &&
-			formData.full_name[0]?.trim().length > 0
-		)
-			completedSteps++;
-		if (formData.fitness_level.length > 0) completedSteps++;
-		if (formData.goals.length > 0) completedSteps++;
-		if (formData.workout_frequency.length > 0) completedSteps++;
+		if (canContinueStep("full_name", false)) completedSteps++;
+		if (canContinueStep("gender", false)) completedSteps++;
+		if (canContinueStep("vision", false)) completedSteps++;
+		if (canContinueStep("count_per_day", false)) completedSteps++;
 
 		return {
 			currentStep: currentStepIndex + 1,
@@ -208,28 +148,23 @@ export const useOnboarding = () => {
 		// Form state
 		formState,
 		watchedValues,
-
-		// Validation state
 		errors: formState.errors,
 		isValid: formState.isValid,
 		isDirty: formState.isDirty,
 
-		// Data getters (only use getOnboardingData when completing onboarding!)
-		getOnboardingData,
+		// Data getters
+		getFormData: getValues,
 		isFormComplete,
 
-		// Raw form data (for passing to SignUpFlow before validation)
-		getRawFormData: getValues,
-
 		// Actions
-		handleOptionSelect,
+		updateField,
 		isOptionSelected,
 		canContinueStep,
 		completeOnboarding,
 		getProgress,
 		resetForm,
 
-		// Form methods (expose if needed)
+		// Form methods
 		setValue,
 		getValues,
 		trigger,

@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { H1 } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuthComplete";
 import { authTexts } from "../data";
 import type { StepProps } from "../types";
 
@@ -23,19 +23,11 @@ export const VerificationStep: React.FC<StepProps> = ({
 	onClose,
 	onboardingData,
 }) => {
-	const {
-		verifyCode,
-		sendVerificationCode,
-		isVerifying,
-		isSendingCode,
-		error,
-		fieldErrors,
-		clearError,
-		completeAuth,
-	} = useAuth();
+	const { verifyCode, isLoading } = useAuth();
 	const [localCode, setLocalCode] = useState(data.verificationCode);
 	const [countdown, setCountdown] = useState(0);
 	const [canResend, setCanResend] = useState(true);
+	const [codeError, setCodeError] = useState("");
 
 	const ref = useBlurOnFulfill({
 		value: localCode,
@@ -47,29 +39,29 @@ export const VerificationStep: React.FC<StepProps> = ({
 		setValue: (code: string) => {
 			setLocalCode(code);
 			onDataChange({ verificationCode: code });
-			clearError();
 		},
 	});
 
 	const handleVerificationChange = (code: string) => {
 		setLocalCode(code);
 		onDataChange({ verificationCode: code });
-		clearError();
 	};
 
 	const handleContinue = async () => {
+		console.log(onboardingData);
+
 		if (localCode.length === CELL_COUNT) {
 			const result = await verifyCode(
 				data.email,
 				localCode,
-				data.fullName,
+				//	data.fullName,
 				onboardingData,
 			);
 
 			if (result.success) {
 				// Close auth sheet and complete authentication
 				if (onClose) onClose();
-				await completeAuth();
+				// await completeAuth();
 			}
 		}
 	};
@@ -94,9 +86,9 @@ export const VerificationStep: React.FC<StepProps> = ({
 	}, [countdown]);
 
 	const handleResendCode = async () => {
-		if (!canResend || isSendingCode) return;
+		if (!canResend || isLoading) return;
 
-		const result = await sendVerificationCode(data.email);
+		const result = await verifyCode(data.email, localCode);
 
 		if (result.success) {
 			// Reset countdown after successful resend
@@ -106,7 +98,7 @@ export const VerificationStep: React.FC<StepProps> = ({
 	};
 
 	const getResendText = () => {
-		if (isSendingCode) {
+		if (isLoading) {
 			return "Sending...";
 		} else if (countdown > 0) {
 			return `Resend (${countdown}s)`;
@@ -114,9 +106,6 @@ export const VerificationStep: React.FC<StepProps> = ({
 			return authTexts.verification.resend.link; // Just "Resend" when countdown is 0
 		}
 	};
-
-	// Only show verification-specific errors on this step (not email errors)
-	const codeError = fieldErrors?.verificationCode;
 
 	return (
 		<View className="flex-1">
@@ -136,7 +125,7 @@ export const VerificationStep: React.FC<StepProps> = ({
 					onChangeText={handleVerificationChange}
 					cellCount={CELL_COUNT}
 					autoFocus={true}
-					editable={!isVerifying}
+					editable={!isLoading}
 					rootStyle={{
 						marginTop: 0,
 						width: "100%",
@@ -173,11 +162,11 @@ export const VerificationStep: React.FC<StepProps> = ({
 
 			<Button
 				onPress={handleContinue}
-				disabled={localCode.length !== CELL_COUNT || isVerifying}
+				disabled={localCode.length !== CELL_COUNT || isLoading}
 				className="h-14 rounded-full"
 				size="lg"
 			>
-				{isVerifying ? "Verifying..." : authTexts.verification.button}
+				{isLoading ? "Verifying..." : authTexts.verification.button}
 			</Button>
 
 			<View className="mt-4">
@@ -185,11 +174,11 @@ export const VerificationStep: React.FC<StepProps> = ({
 					{authTexts.verification.resend.text}{" "}
 					<Text
 						className={`font-medium ${
-							canResend && !isSendingCode
+							canResend && !isLoading
 								? "text-primary cursor-pointer"
 								: "text-muted-foreground opacity-60"
 						}`}
-						onPress={canResend && !isSendingCode ? handleResendCode : undefined}
+						onPress={canResend && !isLoading ? handleResendCode : undefined}
 					>
 						{getResendText()}
 					</Text>

@@ -16,23 +16,23 @@ export const welcomeTexts = {
 export const welcomeSlides: WelcomeSlide[] = [
 	{
 		id: 1,
-		title: "Welcome to Beast Mode",
+		title: "Welcome to Vision App",
 		description:
-			"Transform your fitness journey with personalized workouts and tracking.",
+			"Transform your life by writing your vision and reading it daily to stay focused and motivated.",
 		image: require("@/assets/onboarding/1.png"),
 	},
 	{
 		id: 2,
-		title: "Track Your Progress",
+		title: "Track Your Vision",
 		description:
-			"Monitor your workouts, set goals, and see your improvements over time.",
+			"Monitor how many times you read your vision each day and build consistent habits.",
 		image: require("@/assets/onboarding/2.png"),
 	},
 	{
 		id: 3,
-		title: "Stay Motivated",
+		title: "Stay Focused",
 		description:
-			"Join a community of fitness enthusiasts and achieve your goals together.",
+			"Join a community of vision-driven individuals and achieve your dreams together.",
 		image: require("@/assets/onboarding/3.png"),
 	},
 ];

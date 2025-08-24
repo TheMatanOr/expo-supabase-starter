@@ -11,7 +11,7 @@ export const handleAuthSuccess = (authData: {
 	console.log("Authentication successful:", authData);
 
 	// Navigate to protected homepage
-	router.replace("/(protected)/(tabs)/" as any);
+	router.replace("/(protected)/" as any);
 };
 
 /**

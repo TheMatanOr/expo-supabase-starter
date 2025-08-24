@@ -5,7 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PortalProvider } from "@gorhom/portal";
 
-import { AuthProvider, useAuth } from "@/context/supabase-provider";
+import { AuthProvider, useAuth } from "@/hooks/useAuthComplete";
 import { BottomSheetProvider } from "@/context/bottom-sheet-provider";
 import { SelectBottomSheet } from "@/components/ui/select";
 

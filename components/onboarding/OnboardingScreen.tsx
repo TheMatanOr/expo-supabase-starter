@@ -17,6 +17,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { OptionCard } from "@/components/ui/option-card";
 import { BackButton } from "@/components/ui/back-button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { SignUpFlow } from "@/components/auth";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { onboardingSteps, onboardingTexts, onboardingAnimations } from "./data";
@@ -24,6 +25,7 @@ import type {
 	OnboardingStep,
 	OnboardingOption,
 	OnboardingScreenProps,
+	OnboardingFormData,
 } from "./types";
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
@@ -33,14 +35,13 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 }) => {
 	const router = useRouter();
 	const {
-		handleOptionSelect,
+		updateField,
 		isOptionSelected,
 		canContinueStep,
 		completeOnboarding,
 		getProgress,
 		errors,
-		getOnboardingData,
-		getRawFormData,
+		getFormData,
 		formState,
 		watchedValues,
 	} = useOnboarding();
@@ -140,22 +141,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 	};
 
 	const handleOptionSelectWrapper = (optionId: string): void => {
-		const isMultiSelect = currentStep.type === "multi-select";
-		const stepKey = currentStep.id as
-			| "full_name"
-			| "fitness_level"
-			| "goals"
-			| "workout_frequency";
-		console.log(
-			`Selecting option: ${optionId} for step: ${currentStep.id} (multiSelect: ${isMultiSelect})`,
-		);
-		handleOptionSelect(stepKey, optionId, isMultiSelect);
+		const fieldKey = currentStep.id as keyof OnboardingFormData;
+		console.log(`Selecting option: ${optionId} for step: ${currentStep.id}`);
+		updateField(fieldKey, optionId);
 	};
 
 	const handleInputChange = (text: string): void => {
-		const stepKey = currentStep.id as "full_name";
-		console.log(`Input change for ${stepKey}: ${text}`);
-		handleOptionSelect(stepKey, text, false); // Treat input as single selection
+		const fieldKey = currentStep.id as keyof OnboardingFormData;
+		console.log(`Input change for ${fieldKey}: ${text}`);
+		updateField(fieldKey, text);
 	};
 
 	const handleContinue = async (): Promise<void> => {
@@ -191,22 +185,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 	};
 
 	const canContinue = (): boolean => {
-		const stepKey = currentStep.id as
-			| "full_name"
-			| "fitness_level"
-			| "goals"
-			| "workout_frequency";
-		return canContinueStep(stepKey, currentStep.required);
+		const fieldKey = currentStep.id as keyof OnboardingFormData;
+		return canContinueStep(fieldKey, currentStep.required);
 	};
 
 	const currentStepError =
-		errors[
-			currentStep.id as
-				| "full_name"
-				| "fitness_level"
-				| "goals"
-				| "workout_frequency"
-		]?.message;
+		errors[currentStep.id as keyof OnboardingFormData]?.message;
 
 	return (
 		<SafeAreaView className="flex flex-1 bg-background">
@@ -260,19 +244,32 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 						)}
 					</View>
 
-					{/* Input or Options */}
+					{/* Input, Textarea, or Options */}
 					{currentStep.type === "input" ? (
 						<View className="gap-y-4">
 							<Input
 								placeholder={currentStep.placeholder || "Enter your answer"}
-								value={
-									watchedValues[
-										currentStep.id as keyof typeof watchedValues
-									]?.[0] || ""
-								}
+								value={String(
+									watchedValues[currentStep.id as keyof OnboardingFormData] ||
+										"",
+								)}
 								onChangeText={handleInputChange}
 								autoCapitalize="words"
 								autoComplete="name"
+							/>
+						</View>
+					) : currentStep.type === "textarea" ? (
+						<View className="gap-y-4">
+							<Textarea
+								placeholder={currentStep.placeholder || "Enter your answer"}
+								value={String(
+									watchedValues[currentStep.id as keyof OnboardingFormData] ||
+										"",
+								)}
+								onChangeText={handleInputChange}
+								autoCapitalize="sentences"
+								numberOfLines={6}
+								textAlignVertical="top"
 							/>
 						</View>
 					) : (
@@ -284,11 +281,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 									label={option.label}
 									description={option.description}
 									isSelected={isOptionSelected(
-										currentStep.id as
-											| "full_name"
-											| "fitness_level"
-											| "goals"
-											| "workout_frequency",
+										currentStep.id as keyof OnboardingFormData,
 										option.id,
 									)}
 									onPress={handleOptionSelectWrapper}
@@ -354,7 +347,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 					console.log("OnboardingScreen: Sign up successful:", data);
 					// TODO: Handle successful signup (e.g., navigate to main app)
 				}}
-				onboardingData={getRawFormData()}
+				onboardingData={getFormData()}
 			/>
 		</SafeAreaView>
 	);

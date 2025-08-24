@@ -3,66 +3,44 @@ import { View, Text } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { H1 } from "@/components/ui/typography";
-import { useAuth } from "@/hooks/useAuth";
+import { useOTPAuth } from "@/hooks/useOTPAuth";
 import { authTexts } from "../data";
 import type { StepProps } from "../types";
+import { useAuth } from "@/hooks/useAuthComplete";
+import { router } from "expo-router";
 
 export const EmailStep: React.FC<StepProps> = ({
 	data,
 	onDataChange,
 	onNext,
 	mode = "signup",
+	onboardingData,
 	onSwitchMode,
 }) => {
-	const {
-		sendVerificationCode,
-		isSendingCode,
-		error,
-		fieldErrors,
-		clearError,
-	} = useAuth();
-
-	// Check if we should show continue anyway option (for signup when user exists)
-	const showContinueAnyway =
-		mode === "signup" && fieldErrors?.showContinueAnyway;
+	const { signInOTP, isLoading } = useAuth();
+	const [error, setError] = useState<string | null>(null);
+	const [userAlreadyExists, setUserAlreadyExists] = useState(false);
 	const [localEmail, setLocalEmail] = useState(data.email);
 
 	const handleEmailChange = (email: string) => {
 		setLocalEmail(email);
 		onDataChange({ email });
-		clearError();
+		setError(null);
 	};
 
-	const handleContinue = async () => {
-		console.log(
-			"EmailStep: Starting email verification for:",
-			localEmail,
-			"mode:",
-			mode,
-		);
-
-		// If showing continue anyway, switch to login mode for existing user
-		const actualMode = showContinueAnyway ? "login" : mode;
-		const result = await sendVerificationCode(localEmail, actualMode);
-
-		console.log("EmailStep: Send verification result:", result);
+	const handleSignInOTP = async () => {
+		const result = await signInOTP(localEmail, onboardingData);
+		console.log("EmailStep: Sign in OTP result:", result);
 		if (result.success) {
-			console.log(
-				"EmailStep: Email sent successfully, moving to verification step",
-			);
-			// Move to verification step
 			onNext?.();
 		} else {
-			console.log("EmailStep: Failed to send email:", result.error);
+			setError(result.error?.message || "Failed to send verification code");
+		}
+		if (result.error?.code === "USER_EXISTS") {
+			setUserAlreadyExists(true);
 		}
 	};
 
-	// Show email-specific errors (both field errors and general auth errors if email-related)
-	const emailError =
-		fieldErrors?.email ||
-		(error && error.message?.toLowerCase().includes("email")
-			? error.message
-			: null);
 	const texts = authTexts.email[mode];
 
 	return (
@@ -83,33 +61,30 @@ export const EmailStep: React.FC<StepProps> = ({
 					autoCapitalize="none"
 					autoCorrect={false}
 					autoComplete="email"
-					className={`h-14 ${emailError ? "border-red-500" : ""}`}
-					editable={!isSendingCode}
+					className={`h-14 ${error ? "border-red-500" : ""}`}
+					editable={!isLoading}
 				/>
-				{emailError && (
+				{error && (
 					<View>
-						<Text className="text-red-500 text-sm mt-2 px-1">{emailError}</Text>
-						{showContinueAnyway && (
-							<Text className="text-muted-foreground text-xs mt-2 px-1">
-								The onboarding data preferences will not be saved. You will just
-								be logged into your existing account.
-							</Text>
+						<Text className="text-red-500 text-sm mt-2 px-1">{error}</Text>
+						{userAlreadyExists && (
+							<View className="flex flex-row justify-center items-center">
+								<Text className="text-muted-foreground font-light">
+									Looks like a user with this email is alredy exists
+								</Text>
+							</View>
 						)}
 					</View>
 				)}
 			</View>
 
 			<Button
-				onPress={handleContinue}
-				disabled={!localEmail || isSendingCode}
+				onPress={handleSignInOTP}
+				disabled={!localEmail || isLoading}
 				className="h-14 rounded-full"
 				size="lg"
 			>
-				{isSendingCode
-					? "Sending..."
-					: showContinueAnyway
-						? "Continue anyway"
-						: authTexts.email.button}
+				{isLoading ? "Sending..." : authTexts.email.button}
 			</Button>
 		</View>
 	);

@@ -4,7 +4,7 @@ import type { OnboardingStep } from "./types";
 export const onboardingTexts = {
 	buttons: {
 		continue: "Continue",
-		completeSetup: "Complete Setup",
+		completeSetup: "Get Started",
 		back: "Back",
 	},
 	progress: {
@@ -17,91 +17,67 @@ export const onboardingTexts = {
 export const onboardingSteps: OnboardingStep[] = [
 	{
 		id: "full_name",
-		title: "How should we call you?",
-		description: "",
+		title: "What's your name?",
+		description: "Let's personalize your vision journey",
 		type: "input",
 		required: true,
 		placeholder: "Enter your full name",
 	},
 	{
-		id: "fitness_level",
-		title: "What's your fitness level?",
-		description: "Help us personalize your workout experience",
+		id: "gender",
+		title: "What's your gender?",
+		description: "This helps us personalize your experience",
 		type: "single-select",
 		required: true,
 		options: [
 			{
-				id: "beginner",
-				label: "Beginner",
-				description: "New to fitness or getting back into it",
+				id: "male",
+				label: "Male",
+				//	description: "He/Him",
 			},
 			{
-				id: "intermediate",
-				label: "Intermediate",
-				description: "Regular exercise routine, familiar with basics",
+				id: "female",
+				label: "Female",
+				//	description: "She/Her",
 			},
+
 			{
-				id: "advanced",
-				label: "Advanced",
-				description: "Experienced with complex movements and training",
+				id: "prefer_not_to_say",
+				label: "Prefer not to say",
+				//	description: "Skip this question",
 			},
 		],
 	},
 	{
-		id: "goals",
-		title: "What are your fitness goals?",
-		description: "Select all that apply to customize your experience",
-		type: "multi-select",
+		id: "vision",
+		title: "What's your vision?",
+		description:
+			"Write down what you want to achieve in life. This will be your daily reminder.",
+		type: "textarea",
 		required: true,
-		options: [
-			{
-				id: "weight_loss",
-				label: "Weight Loss",
-				description: "Burn calories and lose weight",
-			},
-			{
-				id: "muscle_gain",
-				label: "Muscle Gain",
-				description: "Build strength and muscle mass",
-			},
-			{
-				id: "endurance",
-				label: "Endurance",
-				description: "Improve cardiovascular health",
-			},
-			{
-				id: "flexibility",
-				label: "Flexibility",
-				description: "Increase mobility and flexibility",
-			},
-			{
-				id: "general_fitness",
-				label: "General Fitness",
-				description: "Overall health and wellness",
-			},
-		],
+		placeholder: "Describe your vision, goals, and dreams...",
 	},
 	{
-		id: "workout_frequency",
-		title: "How often do you want to work out?",
-		description: "We'll suggest a routine that fits your schedule",
+		id: "count_per_day",
+		title: "How many times per day do you want to read your vision?",
+		description: "Choose how often you'll review your vision to stay focused",
 		type: "single-select",
 		required: true,
 		options: [
 			{
-				id: "2-3_times",
-				label: "2-3 times per week",
-				description: "Perfect for beginners or busy schedules",
+				id: "5",
+				label: "5 times per day",
+				description: "Morning, noon, and evening reminders",
 			},
 			{
-				id: "4-5_times",
-				label: "4-5 times per week",
-				description: "Great for building consistent habits",
+				id: "10",
+				label: "10 times per day",
+				description: "Balanced motivation for most people",
 			},
 			{
-				id: "6-7_times",
-				label: "6-7 times per week",
-				description: "For dedicated fitness enthusiasts",
+				id: "20",
+				label: "20 times per day",
+				description: "For those who want constant motivation",
 			},
 		],
 	},

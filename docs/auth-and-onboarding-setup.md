@@ -18,7 +18,8 @@ This document outlines the comprehensive auth and onboarding system built with Z
 
 ### Hooks
 
-- **`useAuth`**: Main authentication hook with Supabase integration
+- **`useAuth`**: Main authentication hook for general app usage (from context/supabase-provider)
+- **`useOTPAuth`**: OTP-based authentication hook for onboarding flow (from hooks/useOTPAuth)
 - **`useOnboarding`**: Onboarding management with validation and progress tracking
 
 ## 🗄️ Database Setup
@@ -75,7 +76,7 @@ lib/
     └── onboarding-store.ts # Onboarding state management
 
 hooks/
-├── useAuth.ts           # Main auth hook with Supabase
+├── useOTPAuth.ts        # OTP-based auth hook for onboarding
 └── useOnboarding.ts     # Onboarding management hook
 
 docs/
@@ -88,7 +89,7 @@ docs/
 ### Using the Auth Hook
 
 ```typescript
-import { useAuth } from "@/hooks/useAuth";
+import { useOTPAuth } from "@/hooks/useOTPAuth";
 
 const MyComponent = () => {
 	const {
@@ -97,7 +98,7 @@ const MyComponent = () => {
 		isLoading,
 		error,
 		isAuthenticated,
-	} = useAuth();
+	} = useOTPAuth();
 
 	const handleSendCode = async (email: string) => {
 		const result = await sendVerificationCode(email);

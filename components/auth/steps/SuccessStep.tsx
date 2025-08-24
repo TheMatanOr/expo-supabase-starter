@@ -19,7 +19,7 @@ export const SuccessStep: React.FC<StepProps> = ({ data, onNext }) => {
 		console.log("User successfully authenticated:", {
 			email: data.email,
 		});
-		router.replace("/(protected)/(tabs)/" as any);
+		router.replace("/(protected)/" as any);
 	};
 
 	return (

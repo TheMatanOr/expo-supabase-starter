@@ -7,7 +7,16 @@ export default function ProtectedLayout() {
 				headerShown: false,
 			}}
 		>
-			<Stack.Screen name="(tabs)" />
+			<Stack.Screen name="index" />
+			<Stack.Screen
+				name="settings"
+				options={{
+					presentation: "modal",
+					headerShown: true,
+					title: "Settings",
+					headerBackTitle: "Back",
+				}}
+			/>
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
 		</Stack>
 	);
