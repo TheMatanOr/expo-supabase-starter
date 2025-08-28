@@ -6,7 +6,7 @@ import { router } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Image } from "expo-image";
-import { useAuth } from "@/context/supabase-provider";
+import { useAuth } from "@/hooks/useAuthComplete";
 
 interface CustomHeaderProps {
 	avatarUrl?: string;

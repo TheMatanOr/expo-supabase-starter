@@ -1,14 +1,15 @@
 import { colors } from "@/constants/colors";
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, Animated, Easing, TouchableOpacity } from "react-native";
-import Svg, { Path, Circle } from "react-native-svg";
+import { View, Text, Animated, Easing } from "react-native";
+import Svg, { Path } from "react-native-svg";
 
 interface SemiCircularProgressProps {
 	totalAccount: number;
 	currentCount: number;
-	size?: number;
+	size?: number; // diameter of the full circle
 	strokeWidth?: number;
 	showPercentage?: boolean;
+	fontScale?: number; // optional: scale the text size (1 = default)
 }
 
 export default function SemiCircularProgress({
@@ -17,6 +18,7 @@ export default function SemiCircularProgress({
 	size = 200,
 	strokeWidth = 20,
 	showPercentage = true,
+	fontScale = 1,
 }: SemiCircularProgressProps) {
 	const [currentCount, setCurrentCount] = useState(initialCurrentCount);
 	const progressAnimation = useRef(new Animated.Value(0)).current;
@@ -27,6 +29,13 @@ export default function SemiCircularProgress({
 	const progress =
 		totalAccount > 0 ? Math.min(currentCount / totalAccount, 1) : 0;
 	const strokeDasharray = circumference;
+
+	// Dynamically calculate text sizes based on size and fontScale
+	const mainTextSize = Math.round((size / 6) * fontScale); // e.g. 40 for size=200, scale=1
+	const subTextSize = Math.round((size / 12) * fontScale); // e.g. 16 for size=200, scale=1
+
+	// Dynamically calculate vertical offset for centering text
+	const verticalOffset = size / 6; // empirically looks good
 
 	useEffect(() => {
 		// Animate the progress
@@ -50,16 +59,6 @@ export default function SemiCircularProgress({
 		inputRange: [0, 1],
 		outputRange: [circumference, 0],
 	});
-
-	const handleIncrement = () => {
-		const newCount = Math.min(currentCount + 1, totalAccount);
-		setCurrentCount(newCount);
-	};
-
-	const handleDecrement = () => {
-		const newCount = Math.max(currentCount - 1, 0);
-		setCurrentCount(newCount);
-	};
 
 	return (
 		<View className="items-center justify-center">
@@ -87,13 +86,35 @@ export default function SemiCircularProgress({
 					/>
 				</Svg>
 
-				{/* Center text */}
-				<View className="absolute inset-0 top-10 items-center justify-center ">
-					<Text className="text-4xl font-bold text-gray-800">
+				{/* Center text, vertically offset to look centered in the semi-circle */}
+				<View
+					pointerEvents="none"
+					style={{
+						position: "absolute",
+						left: 0,
+						right: 0,
+						top: verticalOffset,
+						alignItems: "center",
+						justifyContent: "center",
+					}}
+				>
+					<Text
+						style={{
+							fontSize: mainTextSize,
+							fontWeight: "bold",
+							color: "#1f2937", // text-gray-800
+						}}
+					>
 						{currentCount}
 					</Text>
 					{showPercentage && (
-						<Text className="text-sm text-gray-600 mt-1">
+						<Text
+							style={{
+								fontSize: subTextSize,
+								color: "#6b7280", // text-gray-600
+								marginTop: subTextSize * 0.2,
+							}}
+						>
 							of {totalAccount}
 						</Text>
 					)}

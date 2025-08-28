@@ -9,7 +9,8 @@ import {
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/config/supabase";
 import { emailSchema, verificationCodeSchema } from "@/lib/schemas/auth";
-import { OnboardingData } from "@/lib/schemas/onboarding";
+import { OnboardingData } from "@/lib/types";
+import { Database, Tables } from "@/lib/supabase";
 
 // Types
 interface AuthError {
@@ -27,7 +28,7 @@ interface AuthState {
 	// Session state
 	initialized: boolean;
 	session: Session | null;
-	user: User | null;
+	user: Tables<"profiles"> | null;
 
 	// Loading state
 	isLoading: boolean;
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 	// State management
 	const [initialized, setInitialized] = useState(false);
 	const [session, setSession] = useState<Session | null>(null);
-	const [user, setUser] = useState<User | null>(null);
+	const [user, setUser] = useState<Tables<"profiles"> | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 
 	// Send verification code to email
@@ -237,6 +238,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		}
 	}, []);
 
+	const setUserProfile = useCallback(async (userId: string | null) => {
+		if (!userId) {
+			setUser(null);
+			return;
+		}
+		const { data, error } = await supabase
+			.from("profiles")
+			.select("*")
+			.eq("id", userId)
+			.single();
+
+		if (error) {
+			console.error("Error getting user profile:", error);
+			setUser(null);
+			return;
+		}
+		setUser(data as Tables<"profiles">);
+		return;
+	}, []);
 	// Initialize auth state and set up listeners
 	useEffect(() => {
 		let mounted = true;
@@ -256,7 +276,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 				if (mounted) {
 					setSession(session);
-					setUser(session?.user ?? null);
+					setUserProfile(session?.user?.id ?? null);
+
 					setInitialized(true);
 				}
 			} catch (error) {
@@ -276,7 +297,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 			console.log("Auth state changed:", event, session?.user?.email);
 
 			setSession(session);
-			setUser(session?.user ?? null);
+
+			setUserProfile(session?.user?.id ?? null);
 		});
 
 		initializeAuth();

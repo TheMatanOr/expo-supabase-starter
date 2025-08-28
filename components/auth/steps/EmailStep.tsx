@@ -3,7 +3,6 @@ import { View, Text } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { H1 } from "@/components/ui/typography";
-import { useOTPAuth } from "@/hooks/useOTPAuth";
 import { authTexts } from "../data";
 import type { StepProps } from "../types";
 import { useAuth } from "@/hooks/useAuthComplete";

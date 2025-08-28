@@ -18,6 +18,13 @@ export default function ProtectedLayout() {
 				}}
 			/>
 			<Stack.Screen name="modal" options={{ presentation: "modal" }} />
+			<Stack.Screen
+				name="vision"
+				options={{
+					//	presentation: "modal",
+					headerShown: false,
+				}}
+			/>
 		</Stack>
 	);
 }
