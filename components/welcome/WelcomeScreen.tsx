@@ -1,15 +1,9 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Animated, {
-	useSharedValue,
-	useAnimatedStyle,
-	withTiming,
-	interpolateColor,
-	Easing,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Button } from "@/components/ui/button";
@@ -18,7 +12,8 @@ import { H1, Muted } from "@/components/ui/typography";
 import { Text } from "@/components/ui/text";
 import { Image } from "@/components/ui/image";
 import { LoginFlow } from "@/components/auth";
-import { welcomeSlides, welcomeTexts, welcomeAnimations } from "./data";
+import { useWelcomeAnimations } from "./animations";
+import { welcomeSlides, welcomeTexts } from "./data";
 import type { WelcomeSlide, WelcomeScreenProps } from "./types";
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
@@ -34,107 +29,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 	const [currentSlide, setCurrentSlide] = useState<number>(initialSlide);
 	const [showLoginSheet, setShowLoginSheet] = useState(false);
 
-	// Animation values
-	const fadeAnim = useSharedValue(1);
-	const imageFadeAnim = useSharedValue(1);
-	const slideProgress = useSharedValue(initialSlide);
+	// Animations
+	const {
+		contentAnimation,
+		imageAnimation,
+		textAnimatedStyle,
+		dotStyles,
+		animateSlideTransition: animateTransition,
+	} = useWelcomeAnimations(initialSlide, currentSlide);
 
-	// Create dot animations individually (can't use hooks in map)
-	const dot0 = useSharedValue(initialSlide === 0 ? 1 : 0);
-	const dot1 = useSharedValue(initialSlide === 1 ? 1 : 0);
-	const dot2 = useSharedValue(initialSlide === 2 ? 1 : 0);
-	const dotAnimations = [dot0, dot1, dot2];
-
-	// Color values for dot interpolation
-	const primaryColorRgba = "rgba(168, 5, 135, 1)";
-	const inactiveDotColor = "rgba(156, 163, 175, 0.3)";
-
-	// Initialize dot animations on mount
-	useEffect(() => {
-		dotAnimations.forEach((anim, index) => {
-			anim.value = withTiming(index === initialSlide ? 1 : 0, {
-				duration: welcomeAnimations.slideTransition.dotTransition,
-				easing: Easing.out(Easing.ease),
-			});
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	// Animated styles for main content
-	const contentAnimatedStyle = useAnimatedStyle(() => {
-		return {
-			opacity: fadeAnim.value,
-			transform: [
-				{
-					scale:
-						fadeAnim.value * (1 - welcomeAnimations.scale.min) +
-						welcomeAnimations.scale.min,
-				},
-			],
-		};
-	});
-
-	// Animated styles for image
-	const imageAnimatedStyle = useAnimatedStyle(() => {
-		return {
-			opacity: imageFadeAnim.value,
-			transform: [
-				{
-					scale:
-						imageFadeAnim.value * (1 - welcomeAnimations.scale.min) +
-						welcomeAnimations.scale.min,
-				},
-			],
-		};
-	});
-
-	// Animated styles for text
-	const textAnimatedStyle = useAnimatedStyle(() => {
-		return {
-			transform: [
-				{
-					translateY:
-						(1 - fadeAnim.value) * welcomeAnimations.translateY.offset,
-				},
-			],
-		};
-	});
-
-	// Animate slide transition
+	// Animate slide transition wrapper
 	const animateSlideTransition = (newSlide: number): void => {
-		// Fade out
-		fadeAnim.value = withTiming(0, {
-			duration: welcomeAnimations.slideTransition.fadeOut,
-			easing: Easing.out(Easing.ease),
-		});
-		imageFadeAnim.value = withTiming(0, {
-			duration: welcomeAnimations.slideTransition.fadeOut,
-			easing: Easing.out(Easing.ease),
-		});
-
-		// Update slide and dots after fade out
-		setTimeout(() => {
-			setCurrentSlide(newSlide);
-			slideProgress.value = newSlide;
-
-			// Animate dots
-			dotAnimations.forEach((anim, index) => {
-				anim.value = withTiming(index === newSlide ? 1 : 0, {
-					duration: welcomeAnimations.slideTransition.dotTransition,
-					easing: Easing.out(Easing.ease),
-				});
-			});
-
-			// Fade in
-			fadeAnim.value = withTiming(1, {
-				duration: welcomeAnimations.slideTransition.fadeIn,
-				easing: Easing.out(Easing.ease),
-			});
-			imageFadeAnim.value = withTiming(1, {
-				duration: welcomeAnimations.slideTransition.fadeIn,
-				easing: Easing.out(Easing.ease),
-			});
-		}, welcomeAnimations.slideTransition.fadeOut);
+		animateTransition(newSlide, setCurrentSlide);
 	};
 
 	const handleContinue = (): void => {
@@ -165,70 +71,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
 	const currentSlideData: WelcomeSlide = welcomeSlides[currentSlide];
 
-	// Animated dot styles - create all upfront
-	const dot0Style = useAnimatedStyle(() => {
-		const progress = dot0.value;
-		const scale = progress * (welcomeAnimations.scale.max - 0.8) + 0.8;
-		const size = progress * 4 + 8; // 8px to 12px
-
-		return {
-			backgroundColor: interpolateColor(
-				progress,
-				[0, 1],
-				[inactiveDotColor, primaryColorRgba],
-			),
-			width: size,
-			height: size,
-			transform: [{ scale }],
-		};
-	});
-
-	const dot1Style = useAnimatedStyle(() => {
-		const progress = dot1.value;
-		const scale = progress * (welcomeAnimations.scale.max - 0.8) + 0.8;
-		const size = progress * 4 + 8;
-
-		return {
-			backgroundColor: interpolateColor(
-				progress,
-				[0, 1],
-				[inactiveDotColor, primaryColorRgba],
-			),
-			width: size,
-			height: size,
-			transform: [{ scale }],
-		};
-	});
-
-	const dot2Style = useAnimatedStyle(() => {
-		const progress = dot2.value;
-		const scale = progress * (welcomeAnimations.scale.max - 0.8) + 0.8;
-		const size = progress * 4 + 8;
-
-		return {
-			backgroundColor: interpolateColor(
-				progress,
-				[0, 1],
-				[inactiveDotColor, primaryColorRgba],
-			),
-			width: size,
-			height: size,
-			transform: [{ scale }],
-		};
-	});
-
-	const dotStyles = [dot0Style, dot1Style, dot2Style];
-
 	return (
 		<SafeAreaView className="flex flex-1 bg-background p-4 items-center py-6">
 			{/* Full animated content area */}
-			<Animated.View
-				className="flex w-full flex-1"
-				style={contentAnimatedStyle}
-			>
+			<Animated.View className="flex w-full flex-1" style={contentAnimation}>
 				{/* Animated image section */}
 				<View className="flex h-[50%] items-center w-full">
-					<Animated.View style={imageAnimatedStyle} className="w-full h-full">
+					<Animated.View style={imageAnimation} className="w-full h-full">
 						<Image
 							source={currentSlideData.image}
 							contentFit="contain"

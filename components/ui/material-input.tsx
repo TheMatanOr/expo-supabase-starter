@@ -1,7 +1,9 @@
-import React, { useState, useRef } from "react";
-import { View, TextInput, Animated, Pressable } from "react-native";
+import React, { useState } from "react";
+import { View, TextInput, Pressable } from "react-native";
+import Animated from "react-native-reanimated";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
+import { useMaterialInputAnimation } from "./material-input/animations";
 
 interface MaterialInputProps {
 	label: string;
@@ -38,59 +40,29 @@ export function MaterialInput({
 	className,
 }: MaterialInputProps) {
 	const [isFocused, setIsFocused] = useState(false);
-	const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
-	const inputRef = useRef<TextInput>(null);
+	const inputRef = React.useRef<TextInput>(null);
+
+	// Animations
+	const {
+		handleFocus: animateFocus,
+		handleBlur: animateBlur,
+		handleChangeText: animateChangeText,
+		labelAnimatedStyle,
+	} = useMaterialInputAnimation(value, isFocused);
 
 	const handleFocus = () => {
 		setIsFocused(true);
-		Animated.timing(animatedValue, {
-			toValue: 1,
-			duration: 200,
-			useNativeDriver: false,
-		}).start();
+		animateFocus();
 	};
 
 	const handleBlur = () => {
 		setIsFocused(false);
-		if (!value) {
-			Animated.timing(animatedValue, {
-				toValue: 0,
-				duration: 200,
-				useNativeDriver: false,
-			}).start();
-		}
+		animateBlur();
 	};
 
 	const handleChangeText = (text: string) => {
+		animateChangeText(text);
 		onChangeText(text);
-		if (text && !isFocused) {
-			Animated.timing(animatedValue, {
-				toValue: 1,
-				duration: 200,
-				useNativeDriver: false,
-			}).start();
-		}
-	};
-
-	const labelStyle = {
-		transform: [
-			{
-				translateY: animatedValue.interpolate({
-					inputRange: [0, 1],
-					outputRange: [0, -25],
-				}),
-			},
-			{
-				scale: animatedValue.interpolate({
-					inputRange: [0, 1],
-					outputRange: [1, 0.85],
-				}),
-			},
-		],
-		color: animatedValue.interpolate({
-			inputRange: [0, 1],
-			outputRange: ["#6B7280", isFocused ? "#3B82F6" : "#374151"],
-		}),
 	};
 
 	return (
@@ -107,7 +79,7 @@ export function MaterialInput({
 				)}
 			>
 				<Animated.View
-					style={labelStyle}
+					style={labelAnimatedStyle}
 					className="absolute left-3 pointer-events-none"
 				>
 					<Text className="text-sm font-medium">{label}</Text>

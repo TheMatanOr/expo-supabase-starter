@@ -1,7 +1,9 @@
 import { colors } from "@/constants/colors";
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, Animated, Easing, TouchableOpacity } from "react-native";
-import Svg, { Path, Circle } from "react-native-svg";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import Animated from "react-native-reanimated";
+import Svg, { Path } from "react-native-svg";
+import { useSemiCircularProgressAnimation } from "./semi-circular-progress/animations";
 
 interface SemiCircularProgressProps {
 	totalAccount: number;
@@ -19,8 +21,6 @@ export default function SemiCircularProgress({
 	showPercentage = true,
 }: SemiCircularProgressProps) {
 	const [currentCount, setCurrentCount] = useState(initialCurrentCount);
-	const progressAnimation = useRef(new Animated.Value(0)).current;
-	const textAnimation = useRef(new Animated.Value(0)).current;
 
 	const radius = (size - strokeWidth) / 2;
 	const circumference = Math.PI * radius;
@@ -28,28 +28,11 @@ export default function SemiCircularProgress({
 		totalAccount > 0 ? Math.min(currentCount / totalAccount, 1) : 0;
 	const strokeDasharray = circumference;
 
-	useEffect(() => {
-		// Animate the progress
-		Animated.timing(progressAnimation, {
-			toValue: progress,
-			duration: 1500,
-			easing: Easing.out(Easing.cubic),
-			useNativeDriver: false,
-		}).start();
-
-		// Animate the text
-		Animated.timing(textAnimation, {
-			toValue: currentCount,
-			duration: 1500,
-			easing: Easing.out(Easing.cubic),
-			useNativeDriver: false,
-		}).start();
-	}, [currentCount, totalAccount, progress, progressAnimation, textAnimation]);
-
-	const animatedStrokeDashoffset = progressAnimation.interpolate({
-		inputRange: [0, 1],
-		outputRange: [circumference, 0],
-	});
+	// Animations
+	const { animatedProps } = useSemiCircularProgressAnimation(
+		progress,
+		circumference,
+	);
 
 	const handleIncrement = () => {
 		const newCount = Math.min(currentCount + 1, totalAccount);
@@ -76,13 +59,13 @@ export default function SemiCircularProgress({
 
 					{/* Progress circle (filled) */}
 					<AnimatedPath
+						animatedProps={animatedProps}
 						d={`M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`}
 						stroke={colors.primary}
 						strokeWidth={strokeWidth}
 						fill="transparent"
 						strokeLinecap="round"
 						strokeDasharray={strokeDasharray}
-						strokeDashoffset={animatedStrokeDashoffset}
 						strokeLinejoin="round"
 					/>
 				</Svg>

@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	View,
-	Animated,
 	ScrollView,
 	Keyboard,
 	KeyboardEvent,
 	Platform,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import { useRouter } from "expo-router";
 
 import { SafeAreaView } from "@/components/safe-area-view";
@@ -20,7 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SignUpFlow } from "@/components/auth";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { onboardingSteps, onboardingTexts, onboardingAnimations } from "./data";
+import { useOnboardingAnimations } from "./animations";
+import { onboardingSteps, onboardingTexts } from "./data";
 import type {
 	OnboardingStep,
 	OnboardingOption,
@@ -48,13 +49,19 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
 	const [showSignUpSheet, setShowSignUpSheet] = useState(false);
 	const [currentStepIndex, setCurrentStepIndex] = useState(initialStep);
-	const fadeAnim = useRef(new Animated.Value(1)).current;
-	const slideAnim = useRef(new Animated.Value(0)).current;
-	const buttonAnim = useRef(new Animated.Value(0)).current;
 	const [keyboardHeight, setKeyboardHeight] = useState(0);
 	const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
 	const currentStep: OnboardingStep = onboardingSteps[currentStepIndex];
+
+	// Animations
+	const {
+		contentAnimatedStyle,
+		buttonAnimatedStyle,
+		animateStepTransition: animateTransition,
+		handleKeyboardShow,
+		handleKeyboardHide,
+	} = useOnboardingAnimations(keyboardHeight, isKeyboardVisible);
 
 	// Keyboard event handlers
 	useEffect(() => {
@@ -62,24 +69,12 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			const keyboardHeightValue = event.endCoordinates.height;
 			setKeyboardHeight(keyboardHeightValue);
 			setIsKeyboardVisible(true);
-
-			// Animate button to float above keyboard with smooth easing
-			Animated.timing(buttonAnim, {
-				toValue: keyboardHeightValue,
-				duration: 250,
-				useNativeDriver: false,
-			}).start();
+			handleKeyboardShow(keyboardHeightValue);
 		};
 
 		const keyboardWillHide = () => {
 			setIsKeyboardVisible(false);
-
-			// Animate button back to normal position
-			Animated.timing(buttonAnim, {
-				toValue: 0,
-				duration: 250,
-				useNativeDriver: false,
-			}).start();
+			handleKeyboardHide();
 		};
 
 		// Add keyboard event listeners
@@ -97,46 +92,16 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 			showSubscription.remove();
 			hideSubscription.remove();
 		};
-	}, [buttonAnim]);
+	}, [handleKeyboardShow, handleKeyboardHide]);
 
-	// Animate step transition
+	// Animate step transition wrapper
 	const animateStepTransition = (direction: "next" | "prev"): void => {
-		// Fade out current content
-		Animated.parallel([
-			Animated.timing(fadeAnim, {
-				toValue: 0,
-				duration: onboardingAnimations.stepTransition.fadeOut,
-				useNativeDriver: true,
-			}),
-			Animated.timing(slideAnim, {
-				toValue:
-					direction === "next"
-						? -onboardingAnimations.stepTransition.slideOffset
-						: onboardingAnimations.stepTransition.slideOffset,
-				duration: onboardingAnimations.stepTransition.fadeOut,
-				useNativeDriver: true,
-			}),
-		]).start(() => {
-			// Update step index
+		animateTransition(direction, () => {
 			if (direction === "next") {
 				setCurrentStepIndex((prev) => prev + 1);
 			} else {
 				setCurrentStepIndex((prev) => prev - 1);
 			}
-
-			// Fade in new content
-			Animated.parallel([
-				Animated.timing(fadeAnim, {
-					toValue: 1,
-					duration: onboardingAnimations.stepTransition.fadeIn,
-					useNativeDriver: true,
-				}),
-				Animated.timing(slideAnim, {
-					toValue: 0,
-					duration: onboardingAnimations.stepTransition.fadeIn,
-					useNativeDriver: true,
-				}),
-			]).start();
 		});
 	};
 
@@ -224,16 +189,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: 100 }} // Add padding for floating button
 			>
-				<Animated.View
-					style={{
-						opacity: fadeAnim,
-						transform: [
-							{
-								translateX: slideAnim,
-							},
-						],
-					}}
-				>
+				<Animated.View style={contentAnimatedStyle}>
 					{/* Step Title and Description */}
 					<View className="mb-8">
 						<H1 className="text-center ">{currentStep.title}</H1>
@@ -301,22 +257,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
 			{/* Continue Button */}
 			<Animated.View
-				className="absolute bottom-12 left-0 right-0 p-4 "
-				style={{
-					transform: [
-						{
-							translateY: buttonAnim.interpolate({
-								inputRange: [0, keyboardHeight],
-								outputRange: [0, -keyboardHeight + 20], // 20px margin from keyboard
-								extrapolate: "clamp",
-							}),
-						},
-					],
-
-					shadowOpacity: isKeyboardVisible ? 0.1 : 0,
-					shadowRadius: 8,
-					elevation: isKeyboardVisible ? 8 : 0,
-				}}
+				className="absolute bottom-12 left-0 right-0 p-4"
+				style={[
+					buttonAnimatedStyle,
+					{
+						shadowOpacity: isKeyboardVisible ? 0.1 : 0,
+						shadowRadius: 8,
+						elevation: isKeyboardVisible ? 8 : 0,
+					},
+				]}
 			>
 				<Button
 					variant="default"

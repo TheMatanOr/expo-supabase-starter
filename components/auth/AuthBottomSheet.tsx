@@ -1,11 +1,13 @@
 import React, { useRef, useCallback } from "react";
-import { View, Animated, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
+import Animated from "react-native-reanimated";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import {
 	CustomBottomSheet,
 	CustomBottomSheetRef,
 } from "@/components/ui/bottom-sheet";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useAuthBottomSheetAnimation } from "./animations";
 import { authConstants } from "./data";
 import type {
 	AuthStep,
@@ -38,7 +40,10 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 }) => {
 	const { colors } = useColorScheme();
 	const bottomSheetRef = useRef<CustomBottomSheetRef>(null);
-	const fadeAnim = useRef(new Animated.Value(1)).current;
+
+	// Animations
+	const { contentAnimatedStyle, animateStepTransition } =
+		useAuthBottomSheetAnimation();
 
 	// Extract step order constant
 	const stepOrder = authConstants.stepOrder;
@@ -49,29 +54,18 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 		if (currentIndex > 0) {
 			const previousStep = stepOrder[currentIndex - 1];
 
-			Animated.timing(fadeAnim, {
-				toValue: 0,
-				duration: authConstants.animationDuration,
-				useNativeDriver: true,
-			}).start(() => {
+			animateStepTransition(() => {
 				// Clear current step data and errors when going back
 				if (currentStep === "verification") {
-					// Clear verification code when going back to email
 					onAuthDataChange({ verificationCode: "" });
 				} else if (currentStep === "email") {
-					// Clear email when going back to welcome
 					onAuthDataChange({ email: "" });
 				}
 
 				onStepChange(previousStep);
-				Animated.timing(fadeAnim, {
-					toValue: 1,
-					duration: authConstants.animationDuration,
-					useNativeDriver: true,
-				}).start();
 			});
 		}
-	}, [currentStep, fadeAnim, onStepChange, stepOrder, onAuthDataChange]);
+	}, [currentStep, onStepChange, stepOrder, onAuthDataChange, animateStepTransition]);
 
 	const handleNext = useCallback(() => {
 		console.log(
@@ -87,22 +81,13 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 			const nextStep = stepOrder[currentIndex + 1];
 			console.log("AuthBottomSheet: Moving to next step:", nextStep);
 
-			Animated.timing(fadeAnim, {
-				toValue: 0,
-				duration: authConstants.animationDuration,
-				useNativeDriver: true,
-			}).start(() => {
+			animateStepTransition(() => {
 				onStepChange(nextStep);
-				Animated.timing(fadeAnim, {
-					toValue: 1,
-					duration: authConstants.animationDuration,
-					useNativeDriver: true,
-				}).start();
 			});
 		} else {
 			console.log("AuthBottomSheet: Already at last step, cannot move next");
 		}
-	}, [currentStep, fadeAnim, onStepChange, stepOrder]);
+	}, [currentStep, onStepChange, stepOrder, animateStepTransition]);
 
 	const currentStepConfig = steps[currentStep];
 	const CurrentStepComponent = currentStepConfig.component;
@@ -142,12 +127,7 @@ export const AuthBottomSheet: React.FC<AuthBottomSheetLayoutProps> = ({
 			<View className="flex-1 pt-10 px-6 pb-6">
 				{renderHeaderButtons()}
 
-				<Animated.View
-					className="flex-1"
-					style={{
-						opacity: fadeAnim,
-					}}
-				>
+				<Animated.View className="flex-1" style={contentAnimatedStyle}>
 					<CurrentStepComponent
 						data={authData}
 						onDataChange={onAuthDataChange}
